@@ -81,7 +81,7 @@
     }
 </script>
 
-<div class="auth-container">
+<div class="auth-container">+
     {#if $currentUser}
         <div class="user-info">
             <div class="avatar-container">

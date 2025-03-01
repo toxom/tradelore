@@ -1,9 +1,12 @@
 <script lang="ts">
+	import { Compass } from 'lucide-svelte';
     export let companyName = 'Magellan';
     export let year = new Date().getFullYear();
     import { t } from '../../stores/translation.store';
 
     let footerHeight = '3rem';
+    let footerWidth = '100%';
+
     let tooltipVisible = false;
     let tooltip = '';
     let tooltipPosition = { x: 0, y: 0 };
@@ -57,7 +60,8 @@
           y: e.clientY
         };
         footerHeight = footerHeight === '3rem' ? '6rem' : '3rem';
-        
+        footerWidth = footerWidth === 'auto' ? '100%' : 'auto';
+
         setTimeout(() => {
           tooltipVisible = false;
         }, 1500);
@@ -66,14 +70,24 @@
     </script>
     <footer 
       class="footer"
-      style="height: {footerHeight}"
-      on:mouseenter={() => footerHeight = '500px'}
-      on:mouseleave={() => footerHeight = '3rem'} 
+      style="height: {footerHeight}; width: {footerWidth}"
+      on:mouseenter={() => {
+          footerHeight = '50%';
+          footerWidth = '100%';
+      }}
+      on:mouseleave={() => {
+          footerHeight = '3rem';
+          footerWidth = 'auto';
+      }}
       on:click={handleClickFooter}
-    >
+      >
       <div class="content">
-        <h2>Magellan</h2>
-
+        <span class='logo'>
+          <Compass size={20} />
+          <h1>
+            Magellan
+          </h1>
+        </span>
         <div class="footer-grid">
           <div>
             <!-- <img src={Logo1} alt="Logo" /> -->
@@ -108,18 +122,21 @@
       background:var(--bg-gradient);
       text-align: center;
       position: fixed;
+      align-items: center;
       bottom: 0;
-      left: 0;
+      left: calc(50% - 450px);
       right: 0;
       transition: height 0.3s ease;
       overflow: hidden;
-      border-top-left-radius: 25%;
-      border-top-right-radius: 25%;
+      border-top-left-radius: 1rem;
+      border-top-right-radius: 1rem;
       border-top: 1px solid;
       border-color: var(--bg-color);
+      z-index: 21;
+      max-width: 900px;
+
     }
     .content {
-      max-width: 1200px;
       margin: 0 auto;
       padding: 0 1rem;
       & h2 {
@@ -127,8 +144,11 @@
         }
     }
     .footer-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: top;
+      width: 100%;
       gap: 2rem;
       text-align: left;
       margin-bottom: 2rem;
@@ -167,13 +187,60 @@
       z-index: 1000;
       animation: fadeIn 0.2s;
     }
+
+
+	span.logo {
+		display: flex;
+		flex-direction: row;
+		height: 3rem;
+		margin: 0;
+		gap: 1rem;
+    width: 100%;
+		justify-content: center;
+		align-items: center;
+		color: var(--text-color);
+    h1 {
+      font-size: 1.5rem;
+    }
+	}
     @keyframes fadeIn {
       from { opacity: 0; }
       to { opacity: 1; }
     }
-    @media (max-width: 768px) {
+
+    @media (max-width: 1600px) {
+      .footer {
+        padding:  0;
+        background:var(--bg-gradient);
+        text-align: center;
+        position: fixed;
+        bottom: 0;
+        right: 0;
+        left: auto;
+        transition: height 0.3s ease;
+        overflow: hidden;
+        border-top-left-radius: 2rem;
+        border-top-right-radius: 0;
+        border-top: 1px solid;
+        border-color: var(--bg-color);
+        max-width: 200px;
+      }
       .footer-grid {
-        grid-template-columns: 1fr 1fr;
+        flex-direction: column;
+        gap: 0;
+      }
+      span.logo {
+        h1 {
+          width: auto;
+        }
+      }
+      
+    }
+
+
+    @media (max-width: 768px) {
+      .footer {
+        display: none;
       }
     }
     </style>

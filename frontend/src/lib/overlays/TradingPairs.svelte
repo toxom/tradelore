@@ -121,7 +121,7 @@
         flex-direction: row;
         position: absolute;
         left: 1rem;
-        right: 1rem;
+        right: 0;
         bottom: 1rem;
         background: var(--bg-gradient);
         border-radius: 1rem;
@@ -200,15 +200,17 @@
 
 
     .table-container {
-        width: 100%;
+        width: auto;
         display: flex;
         flex-direction: column;
         position: absolute;
         bottom: 4rem;
         top: 0;
+        left: 0;
+        right: 0;
         border-collapse: collapse;
         overflow-x: hidden;
-        
+
 
         &.static {
             position: sticky;
@@ -237,7 +239,7 @@
 
 
         table {
-            width: 100%;
+            margin-left: 1rem;
             border-collapse: collapse;
 
             & thead {
@@ -309,7 +311,7 @@
                 font-weight: 200;
                 height: 3rem;
                 padding: 0.5rem;
-                background-color: var(--primary-color);
+        background: transparent !important;
                 border-bottom: 1px solid var(--secondary-color);
             }
         }

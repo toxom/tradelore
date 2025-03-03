@@ -4,6 +4,7 @@
     import { fly, fade, slide } from 'svelte/transition';
     import { X, Calculator, Camera, Bell, MapPin, CircleX, LogIn, User, LogOut, MessageCircle, Filter, FilterX, Compass } from 'lucide-svelte';
 	import { Moon, Sun, Sunset, Sunrise, Focus, Bold, Gauge, Key, Bone } from 'lucide-svelte';
+    import { Wallet, Landmark, CreditCard, BarChart, PieChart } from 'lucide-svelte';
     import Notifications from '$lib/overlays/NotificationsOverlay.svelte';
     import Profile from '$lib/overlays/ProfileOverlay.svelte';
     import { currentUser } from '$lib/pocketbase';
@@ -17,6 +18,7 @@
 	import Dropdown from '$lib/containers/Dropdown.svelte';
 	import Footer from '$lib/containers/Footer.svelte';
 	import StyleSwitcher from '$lib/overlays/StyleSwitcher.svelte';
+    import ToggleAllButton from "$lib/buttons/ToggleAllButton.svelte"
 
 	export let user: any;
 	export let onClose: () => void;
@@ -169,6 +171,9 @@
 			</h1>
 		</span>
 		<div class="nav-links" transition:fly={{ y: 50, duration: 300 }}>
+            <!-- <ToggleAllButton type="assets" text= {$t('nav.wallet')} icon={Wallet} /> -->
+            <ToggleAllButton type="trade" text= {$t('nav.trade')} icon={BarChart} />
+
 			<button 
 			class="nav-link" 
 			class:active={overlayState.notifications} 

@@ -14,6 +14,8 @@ export default {
         notifications: 'Notifications',
 		login: 'Login',
 		signup: 'Sign Up',
+		wallet: 'Wallet',
+		trade: 'Trade',
 	},
 	lang: {
 		notification: 'Language: English',

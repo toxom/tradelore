@@ -56,6 +56,190 @@ $themes: (
 .app-container {
 	@include theme-styles;
 }
+.backdrop {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.5);
+	z-index: 1999;
+}
+
+.overlay {
+	position: fixed;
+	display: flex;
+	flex-direction: column;
+	border-radius: 10px;
+	// backdrop-filter: blur(50px);
+	// background: var(--primary-color);
+	// border: 1px solid var(--secondary-color);
+	padding: 1rem;
+	margin: 1rem;
+	// color: var(--text-color);
+	/* z-index: 10; */
+	transition: all 0.3s ease;
+	cursor: pointer;
+	user-select: none;
+
+	h2 {
+		font-weight: 700;
+		width: calc(100% - 1rem);
+		margin-top: 0;
+	}
+}
+.overlay.expanded {
+	width: 98%; 
+	height: 90%; 
+	top: 3%;
+	left: auto;
+	right: auto;
+	bottom: 500px;
+	z-index: 2000;
+	cursor: default;
+	box-shadow: -100px -1px 100px 4px rgba(255, 255, 255, 0.2);
+
+}
+
+.buttons-row {
+	display: flex;
+	flex-direction: row;
+	width: fit-content;
+	justify-content: space-between;
+	align-items: center;
+	z-index: 2000;
+
+}
+
+
+.button-overlays {
+	display: flex;
+	flex-direction: row;
+	width: fit-content;
+	position: fixed;
+	top: 0.75rem;
+	left: 350px; 
+	justify-content: space-between;
+	align-items: center;
+	z-index: 2000;
+}
+
+.button-overlays2 {
+	display: flex;
+	flex-direction: row;
+	width: fit-content;
+	position: fixed;
+	top: 0.75rem;
+	left: calc(500px + 4rem); 
+	justify-content: space-between;
+	align-items: center;
+	z-index: 3000;
+}
+
+.toggle-button {
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: center;
+	gap: 10px;
+	width: auto;
+	height: 2.5rem;
+	border: 1px solid black;
+	border-radius: 20px;
+	background: white;
+	padding: 0.5rem 1rem;
+	cursor: pointer;
+	transition: all 0.3s ease;
+	overflow: hidden;
+	font-size: 16px;
+}
+
+.toggle-button:hover,
+.toggle-button.active {
+	width: auto;
+	padding-right: 1rem;
+	width: auto;
+}
+
+.toggle-all-button {
+	// color: var(--text-color);
+	transition: 0.3s all ease;
+	width: auto;
+	// border-color: var(--secondary-color);
+
+	&:hover {
+		// background-color: var(--secondary-color);
+
+		span.text {
+			display: flex;
+		}
+	}
+}
+.basic-button {
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: center;
+	gap: 10px;
+	width: auto;
+	height: 2.5rem;
+	border: 1px solid black;
+	border-radius: 0.75rem;
+	background: white;
+	padding: 2rem;
+	cursor: pointer;
+	transition: all 0.3s ease;
+	overflow: hidden;
+	font-size: 2rem;
+}
+.button-text {
+	white-space: nowrap;
+	opacity: 0;
+	max-width: 0;
+	transition: opacity 0.3s ease, max-width 0.3s ease;
+}
+
+.button-text.visible {
+	opacity: 1;
+	max-width: 200px;
+}
+
+.close-button, .expand-button {
+	display: none;
+	position: absolute;
+	color: #ffffff;
+	border-radius: 50%;
+	top: 10px;
+	right: 0;
+	margin-right: 0;
+	background-color: transparent;
+	border: none;
+	font-size: 1.5rem;
+	cursor: pointer;
+	transition: all 0.3s ease;
+	transition: all 0.3s ease;
+
+}
+
+.close-button {
+	right: 10px;
+
+	&:hover {
+		color: red;
+	}
+}
+
+.expand-button {
+	right: 10px;
+
+	&:hover {
+		color: rgb(0, 255, 119);
+	}
+}
+
+
+
+
 :root {
 	@each $theme, $colors in $themes {
 		&.#{$theme} {

@@ -13,7 +13,9 @@ export default {
 		themes: 'Сменить тему',
         notifications: 'Уведомления',
 		login: 'Войти',
-		signup: 'Зарегистрироваться'
+		signup: 'Зарегистрироваться',
+		wallet: 'Кошелек',
+		trade: 'Рынки',
 	},
 	lang: {
 		notification: 'Язык: русский',

@@ -1,9 +1,10 @@
 import PocketBase from 'pocketbase';
+import { onMount } from 'svelte';
 import type { AuthModel } from 'pocketbase';
 import { writable } from 'svelte/store'
 import type { User, BusinessAccount } from '../types/accounts';
 
-export const pb = new PocketBase(import.meta.env.VITE_POCKETBASE_URL);
+export const pb = new PocketBase('http://127.0.0.1:8090');
 pb.autoCancellation(false);
 export const currentUser = writable<User | null>(pb.authStore.model);
 pb.authStore.onChange((auth) => {
@@ -21,6 +22,8 @@ export async function checkPocketBaseConnection() {
         return false;
     }
 }
+
+
 export async function ensureAuthenticated(): Promise<boolean> {
     console.log('Checking authentication...');
     console.log('Current auth model:', pb.authStore.model);
@@ -44,21 +47,37 @@ export async function ensureAuthenticated(): Promise<boolean> {
 }
 export async function signUp(email: string, password: string): Promise<User | null> {
     try {
-        const user = await pb.collection('users').create<User>({
+        const userData = {
             email,
             password,
-            passwordConfirm: password
-        });
+            passwordConfirm: password,
+            name: email.split('@')[0],
+            username: email.split('@')[0], 
+        };
+        
+        console.log('Sending signup data:', userData);
+        
+        const user = await pb.collection('users').create<User>(userData);
         return user;
     } catch (error) {
+        // More detailed error logging
+        if (error instanceof Error) {
+            console.error('Sign-up error details:', {
+                message: error.message,
+                name: error.name,
+                data: (error as any).data,
+                response: (error as any).response
+            });
+        }
         console.error('Sign-up error:', error instanceof Error ? error.message : String(error));
         return null;
     }
 }
-export async function signIn(email: string, password: string): Promise<AuthModel | null> {
+export async function signIn(email: string, password: string): Promise<User | null> {
     try {
         const authData = await pb.collection('users').authWithPassword<User>(email, password);
-        return authData;
+        // Cast the auth model to your User type
+        return authData.record as User;
     } catch (error) {
         console.error('Sign-in error:', error instanceof Error ? error.message : String(error));
         return null;
@@ -85,4 +104,14 @@ export function unsubscribeFromChanges(unsubscribe: () => void): void {
     unsubscribe();
 }
 
+// onMount(async () => {
+//     const connected = await checkPocketBaseConnection();
+//     if (connected) {
+//       console.log('Connected to local PocketBase successfully!');
+//       // Perform actions if connected, e.g., fetch data
+//     } else {
+//       console.error('Failed to connect to local PocketBase');
+//       // Handle connection error, e.g., display an error message
+//     }
+//   });
 

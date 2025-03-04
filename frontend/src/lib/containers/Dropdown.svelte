@@ -2,8 +2,7 @@
     import { createEventDispatcher } from 'svelte';
     import { fade } from 'svelte/transition';
   
-    export let options: Array<{code: string, label: string, name: string}>;
-    export let selectedValue: string;
+    export let options: Array<{ code: string; name: string; label?: string | undefined; currentTime?: string }>;    export let selectedValue: string;
     export let icon: any = null;
 
     let isOpen = false;
@@ -15,23 +14,29 @@
       dispatch('select', value);
     }
   
-    $: selectedLabel = options.find(opt => opt.code === selectedValue)?.label || selectedValue;
+    $: selectedLabel = options.find(opt => opt.code === selectedValue)?.label || options.find(opt => opt.code === selectedValue)?.currentTime || selectedValue;
     $: selectedName = options.find(opt => opt.code === selectedValue)?.name || selectedValue;
 
   </script>
   
   <div class="dropdown">
+    <span>
+
     <button class="dropdown-btn" on:click={() => isOpen = !isOpen} class:active={isOpen}>
         {#if icon}
           <svelte:component this={icon} size={16}/>
         {/if}
-        {selectedLabel}
+
+          <h3>{selectedLabel}</h3>
+          
+          {selectedName}
         ▼
       </button>
-     
+    </span>
+
       {#if isOpen}
         <div class="dropdown-content" transition:fade>
-          {#each options as {code, label, name}}
+          {#each options as {code, name, label}}
             <button 
               class="dropdown-item" 
               class:active={code === selectedValue}
@@ -45,25 +50,40 @@
       {/if}
      </div>
   
-<style lang="scss">
-    .dropdown {
-      position: relative;
+     <style lang="scss">
+      @use "src/styles/themes.scss" as *;
+      
+      * {
+          font-family: var(--font-family);
+      }     
+          
+      .dropdown {
+        position: relative;
     }
     .dropdown-btn {
       display: flex;
+      flex-direction: row;
       align-items: center;
-      gap: 1.5rem;
+      justify-content: center;
+      gap: 1rem;
       padding: 0.5rem;
+      font-size: 1rem;
       border: 1px solid;
       border-color: var(--secondary-color);
       border-radius: 1rem;
       background: var(--primary-color);
       cursor: pointer;
-      width: auto;
+      width: 200;
         color: var(--text-color);
       &.active {
         background: var(--secondary-color);
       }
+
+    span {
+      display: flex;
+     background-color: red;
+      flex-direction: column;
+    }
     }
     .dropdown-content {
       position: absolute;
@@ -84,6 +104,15 @@
       gap: 0.5rem;
       
     }
+
+    h3 {
+      margin: 0;
+      padding: 0;
+      font-size: auto;
+      width: min-content;
+
+    }
+
     .dropdown-item {
         width: 100px;
       border: none;

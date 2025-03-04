@@ -50,13 +50,12 @@
 </script>
 
 
-<!-- {#if $currentUser} -->
+{#if $currentUser}
 
 <div class="dashboard">
     <Assets/>
 </div>
-<!-- <Landing/> -->
-<!-- {/if} -->
+
 
 <div class="backdrop-container">
 
@@ -108,17 +107,22 @@
     {/if}
 {/each}
 </div>
+{:else}
+
+<Landing/>
+{/if}
 
 <style lang="scss">
     @use "src/styles/themes.scss" as *;
     * {
         font-family: var(--font-family);
+        background-color: var(--secondary-color);
     }  
 
 
 
 .overlay {
-    border: 1px solid gray;
+
     background-color: var(--bg-color);
 
 }
@@ -131,7 +135,7 @@
         width: auto;
         height: auto;
         margin: 0;
-        top: 4rem;
+        top: 2rem;
         left: 0;
         right: 0;
         bottom: 3rem;
@@ -142,31 +146,33 @@
     .pairs-overlay {
         width: auto;
         height: 11rem;
-        top: 4rem;
+        top: 2rem;
         left: 0;
         right: 0;
         bottom: calc(50% + 1rem);
         border: 1px solid transparent;
+        border-radius: 2rem;
         font-size: 2rem;
         overflow: none;
+        background: var(--bg-gradient);
         &.pairs-expanded {
             height: auto;
-            top: 4rem;
+            top: 2rem;
             left: 0;
-            right: 0;
+            right: 30rem;
             width: auto;
-            bottom: 4rem;
+            bottom: 2rem;
             overflow-x: hidden;
         overflow-y: scroll;
         scrollbar-width:2px;
-        scrollbar-color: var(--secondary-color) transparent;
+        scrollbar-color: t transparent;
         scroll-behavior: smooth; 
         font-size: 1rem;
 
         }
     }
     // .progress-overlay {
-    //     top: 4rem;
+    //     top: 2rem;
     //     bottom: calc(50% + 1rem);
     //     left: 0;
     //     right: auto;
@@ -174,7 +180,7 @@
     //     &.progress-expanded {
     //         width: auto;
     //         height: auto;
-    //         top: 4rem;
+    //         top: 2rem;
     //         left: 1rem;
     //         right: 1rem;
     //         bottom: calc(50% + 1rem);
@@ -183,8 +189,8 @@
     .history-overlay {
         top: auto;
         left: 0;
-        right: 0;
-        bottom: 4rem;
+        right: 500px;
+        bottom: 2rem;
         width: auto;
         height: 20rem;
         overflow-y: scroll;
@@ -192,49 +198,55 @@
         scrollbar-color: var(--secondary-color) transparent;
         scroll-behavior: smooth;
         z-index: 1;
+        background: var(--bg-gradient-r);
 
         &.history-expanded {
             height: auto;
             width: auto;
-            top: 41rem;
+            top: 18rem;
             left: 0;
-            right: 0;
-            bottom: 4rem;
+            right: 500px;
+            bottom: 2rem;
             z-index: 2000;
             cursor: default;
         }
     }
 
     .chart-overlay {
-        top: 17rem;
+        top: 15rem;
         left: 0;
         right: calc(500px + 2rem);
-        bottom: 4rem;
+        bottom: 2rem;
         height: auto;
         border: 1px solid transparent;
+        background: var(--secondary-color);
         &.chart-expanded {
-            top: 17rem;
+            top: 12rem;
             right: 0;
             left: 0;
-            bottom: 4rem;
+            bottom: 2rem;
             height: auto;
             width: auto;
             z-index: 2000;
             cursor: default;
+            background: var(--bg-gradient);
+
         }
     }
     .order-overlay {
         height: auto;
         width: 500px;
         top: calc(50% + 2rem);
-        bottom: 26rem;
+        bottom: 2rem;
         right: 0;
         z-index: 1;
+        background: var(--bg-gradient-left);
+        color: var(--text-color);
 
         &.order-expanded {
             height: auto;
             width: 500px;
-            top: calc(50% + 2rem);
+            top: auto;
             left: auto;
             right: 0;
             bottom:4rem;
@@ -243,7 +255,7 @@
         }
     }
     .book-overlay {
-        top: 16rem;
+        top: 15rem;
         right: 0;
         bottom: calc(50% - 4rem);
         width: 500px;
@@ -253,11 +265,13 @@
         scrollbar-color: var(--secondary-color) transparent;
         scroll-behavior: smooth;
         z-index: 1;
+        background: var(--bg-gradient-left);
+
         &.book-expanded {
             left: auto;
             right: 0;
             top: 17rem;
-            bottom: 4rem;
+            bottom: 2rem;
 
             height: auto;
             width: 50%;
@@ -283,7 +297,7 @@
         height: 11rem;
         left: 0;
         right: 0;
-        top: 4rem;
+        top: 2rem;
         bottom: auto;
         &.pairs-expanded {
             width: auto;
@@ -311,13 +325,13 @@
     // .progress-overlay {
     //     left: 0;
     //     right: auto;
-    //     top: 4rem;
+    //     top: 2rem;
     //     width: 18rem;
     //     height: calc(50% - 7rem);
     //     &.progress-expanded {
     //         width: auto;
     //         height: auto;
-    //         top: 4rem;
+    //         top: 2rem;
     //         left: 0;
     //         right: 0;
     //         bottom: 14rem;
@@ -328,7 +342,6 @@
         left:0;
         right: 0;
         bottom: 46rem;
-        border: 1px solid red;
         height: auto;
         &.chart-expanded {
             top: 18rem;
@@ -381,7 +394,7 @@
     // .progress-overlay {
     //     left: 0;
     //     right: 0;
-    //     top: 4rem;
+    //     top: 2rem;
     //     height: 5rem;
     //     overflow: hidden;
     //     width: auto;
@@ -434,7 +447,7 @@
     .pairs-overlay {
         width: auto;
         height: 11rem;
-        top: 4rem;
+        top: 2rem;
         left: 0;
         right: 0;
         bottom: 4rem;
@@ -520,7 +533,7 @@
     //     .progress-overlay {
     //     left: 0;
     //     right: 0;
-    //     top: 4rem;
+    //     top: 2rem;
     //     height: 4rem;
     //     &.progress-expanded {
     //         top: 8rem;
@@ -571,7 +584,7 @@
     .pairs-overlay {
         width: auto;
         height: 10rem;
-        top: 4rem;
+        top: 2rem;
         left: 0;
         right: 0;
         bottom: auto;

@@ -124,7 +124,8 @@
       position: fixed;
       align-items: center;
       bottom: 0;
-      left: calc(50% - 450px);
+      left: 0;
+      // left: calc(50% - 450px);
       right: 0;
       transition: height 0.3s ease;
       overflow: hidden;
@@ -133,7 +134,7 @@
       border-top: 1px solid;
       border-color: var(--bg-color);
       z-index: 21;
-      max-width: 900px;
+      // max-width: 900px;
 
     }
     .content {

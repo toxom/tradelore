@@ -1,16 +1,33 @@
 <script lang="ts">
+    import { onMount } from 'svelte';
+    import { get } from 'svelte/store';
     import { fade, slide } from 'svelte/transition';
     import { pb } from '$lib/pocketbase';
-    import { Camera, LogOutIcon } from 'lucide-svelte';
+    import { Atom, BadgeCheck, Camera, Currency, Globe, History, LogOutIcon, Mail, MapPinned, SquareUserRound } from 'lucide-svelte';
     import { currentUser } from '$lib/pocketbase';
     import { createEventDispatcher } from 'svelte';
+    import type { User } from '../../types/accounts';
+	import Dropdown from '$lib/containers/Dropdown.svelte';
+    import {
+        countries,
+        timezones,
+        currencies,
+        currentCountry,
+        currentTimezone,
+        currentCurrency,
+    } from '../../stores/preferences.store'
+    import {
+	handleCountryChange,
+        handleCurrencyChange,
+        handleTimezoneChange
+    } from '../../clients/preferenceClient'
 
     export let user: any;
     export let onClose: () => void;
 
-    let isEditing = false;
-    let editedUser = user ? { ...user } : {};
 
+    let isEditing = false;
+    let editedUser = user ? { ...user } : {} as Partial<User>; 
     const dispatch = createEventDispatcher();
 
     function toggleEdit() {
@@ -45,7 +62,10 @@
             console.error('Logout error:', err);
         }
     }
+
+
 </script>
+
 
 <div class="modal-overlay" on:click={handleOutsideClick} transition:fade={{ duration: 300 }}>
     <div class="modal-content" on:click|stopPropagation>
@@ -53,55 +73,118 @@
             <LogOutIcon size={24} />
             <span>Logout</span>
         </button>
-        {#if user}
-            <div class="profile-header">
+        {#if $currentUser}
+        <div class="profile-header">
                 <div class="avatar-container">
                     {#if user.avatar}
                         <img src={pb.getFileUrl(user, user.avatar)} alt="User avatar" class="avatar" />
                     {:else}
-                        <div class="avatar-placeholder">
-                            <Camera size={48} />
-                        </div>
+                    <img src={pb.getFileUrl(user, user.avatar)} alt="User avatar" class="avatar" />
+
                     {/if}
                 </div>
+ 
+                <div class="profile-info">
                 <div class="info-row">
-                    {#if isEditing}
-                        <input bind:value={editedUser.username} />
-                    {:else}
-                        <span>{user.username || 'Not set'}</span>
-                    {/if}
-                </div>        
-            </div>
-            <div class="profile-info">
-                <div class="info-row">
-                    <span class="label">Name:</span>
-                    {#if isEditing}
-                        <input bind:value={editedUser.name} />
-                    {:else}
-                        <span>{user.name || 'Not set'}</span>
-                    {/if}
+                    <!-- <span class="label"></span> -->
+                    <span class="id">
+                        {user.firstName}
+                    </span>
+                    <span class="id">
+                        {user.lastName}
+                    </span>
                 </div>
-                <div class="info-row">
-                    <span class="label">Email:</span>
-                    <span>{user.email}</span>
+
+
+                <div class="dropdown-section">
+                    <span class="label">
+                        <MapPinned/>
+                    </span>  
+                    <span class="label">
+                        <Dropdown
+                            options={countries}
+                            selectedValue={get(currentCountry)} 
+                            on:select={handleCountryChange}
+                        />
+                    </span>                      
+                </div>   
+                <!-- <div class="info-row">
+                    <span class="label">
+                        <MapPinned/>
+                    </span>                     
+                    <span>{user.residence}</span>
+                </div>    -->
+                <div class="dropdown-section">
+                    <span>Timezone</span>
+
+                    <span class="label">
+                        <Dropdown
+                            options={timezones}
+                            selectedValue={get(currentTimezone)} 
+                            on:select={handleTimezoneChange}
+                        />
+                    </span>                      
+                </div>   
+                <div class="dropdown-section">
+                    <span>Base Currency</span>
+
+                    <Dropdown
+                        options={currencies}
+                        selectedValue={get(currentCurrency)} 
+                        on:select={handleCurrencyChange}
+                    />
                 </div>
+
+                <!-- <div class="info-row">
+                    <span class="label">
+                        <Currency/>
+                    </span>                    
+                    <span>{user.defaultCurrency}</span>
+                </div>    -->
+                </div>  
+                 
+                <div class="profile-info">
+                    <div class="info-row">
+                        {#if isEditing}
+                            <input bind:value={editedUser.name} />
+                        {:else}
+                            <span class="label">
+                                <SquareUserRound/>
+                            </span>
+                            <span>{user.name || 'Not set'}</span>
+                        {/if}
+                    </div> 
+                    <div class="info-row">
+                        <span class="label">
+                            <Mail/>
+                        </span>
+                        <span>{user.email}</span>
+                    </div>   
+
+
                 <div class="info-row">
-                    <span class="label">Role:</span>
-                    <span>{user.role}</span>
-                </div>
-                <div class="info-row">
-                    <span class="label">Created:</span>
+                    <span class="label">
+                        <Atom/>
+                    </span>
                     <span>{new Date(user.created).toLocaleString()}</span>
                 </div>
                 <div class="info-row">
-                    <span class="label">Updated:</span>
+                    <span class="label">
+                        <History/>
+                    </span>
                     <span>{new Date(user.updated).toLocaleString()}</span>
                 </div>
                 <div class="info-row">
-                    <span class="label">Verified:</span>
+                    <span class="label">
+                        <BadgeCheck/>
+                    </span>                    
                     <span>{user.verified ? 'Yes' : 'No'}</span>
                 </div>
+ 
+ 
+                </div>  
             </div>
+
             <div class="actions">
                 {#if isEditing}
                     <button on:click={saveChanges}>Save</button>
@@ -119,19 +202,27 @@
     </div>
 </div>
 
-<style>
+<style lang="scss">
+    @use "src/styles/themes.scss" as *;
+    
+    * {
+        font-family: var(--font-family);
+    }      
+    
     .modal-overlay {
         position: fixed;
         top: 4rem;
         left: 0;
+        right: 0;
+        bottom: auto;
         max-width: 100%;
         /* height: 100%; */
         /* background-color: rgba(0, 0, 0, 0.5); */
         display: flex;
-        justify-content: center;
-        align-items: center;
+        justify-content: flex-start;
+        align-items: flex-end;
         z-index: 1000;
-        width: 100%;
+        width: auto;
         display: flex;
         /* background-color: #131313; */
         color: #ffffff;
@@ -187,15 +278,19 @@
 
     .profile-header {
         display: flex;
-        align-items: center;
+        align-items: top;
         margin-bottom: 1rem;
-        color: white;
+        color: var(--text-color);
+        height: 20rem;
 
     }
 
     .avatar-container {
-        width: 80px;
-        height: 80px;
+        left: calc(50% - 4rem);
+        right: calc(50% - 4rem);
+
+        width: 14rem;
+        height: 14rem;
         border-radius: 50%;
         overflow: hidden;
         margin-right: 1rem;
@@ -213,7 +308,6 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        background-color: #e0e0e0;
         color: #757575;
     }
 
@@ -224,19 +318,48 @@
 
     }
 
+    .dropdown-section {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        width: fit-content;
+        justify-content: center;
+        align-items: left;
+        padding: 0.5rem 1rem;
+        // border: 1px solid black;
+        border-radius: 2rem;
+    }
+
     .profile-info {
-        margin-bottom: 1rem;
+        margin: 0;
         color: white;
+        display: flex;
+        flex-direction: column;
+        width: auto;
+        gap: 1rem;
     }
 
     .info-row {
         display: flex;
+        flex-direction: row;
+        justify-content: left;
+        align-items: center;
+        position: relative;
+        margin: 0;
+        left: 0;
+        right: 0;
+        width: 20rem;
+        flex-grow: 1;
+        gap: 1rem;
         margin-bottom: 0.5rem;
+        // padding: 1rem;
+        color: var(--text-color);
+        font-size: 1.5rem;
     }
 
     .label {
         font-weight: bold;
-        width: 100px;
+        width: auto;
     }
 
     .actions {
@@ -264,5 +387,17 @@
         position: absolute;
         right: 20px;
         top: 20px;
+    }
+
+    span {
+        display: flex;
+        gap: 1rem;
+        color: var(--text-color);
+        &.id {
+            font-size: 2.5rem;
+            display: flex;
+            flex-direction: row;
+            gap: 1rem;
+        }
     }
 </style>

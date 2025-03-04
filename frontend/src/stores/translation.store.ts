@@ -1,5 +1,5 @@
 import { derived } from 'svelte/store';
-import { currentLanguage } from './language.store';
+import { currentLanguage } from './preferences.store';
 import en from '$lib/translations/en';
 import ru from '$lib/translations/ru';
 

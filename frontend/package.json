@@ -47,6 +47,7 @@
 		"dotenv": "^16.4.7",
 		"lightweight-charts": "^5.0.3",
 		"lucide-svelte": "^0.475.0",
-		"pg": "^8.13.3"
+		"pg": "^8.13.3",
+		"world-countries": "^5.1.0"
 	}
 }

@@ -28,7 +28,7 @@
 
     // Function to calculate the relative width of the colored portion
     const getRelativeWidth = (amount: number, maxAmount: number) => {
-        return (amount / maxAmount) * 100; // Returns a percentage (0-100)
+        return (amount / maxAmount) * 100;
     };
 
     // Find the maximum amount in bids and asks
@@ -85,7 +85,6 @@
     .order-book {
         display: flex;
         flex-direction: column;
-        font-family: Arial, sans-serif;
         border-radius: 8px;
         width: 100%;
         margin: 0 auto;
@@ -129,19 +128,19 @@
     }
 
     .order-book-row .price {
-        color: var(--text-color); /* Green for bid prices */
-        z-index: 1; /* Ensure text is above the background */
+        color: var(--text-color);
+        z-index: 1; 
     }
 
     .order-book-row.ask .price {
-        color: var(--text-color); /* Red for ask prices */
-        z-index: 1; /* Ensure text is above the background */
+        color: var(--text-color); 
+        z-index: 1; 
     }
 
     .order-book-row .amount,
     .order-book-row .total {
         color: #666;
-        z-index: 1; /* Ensure text is above the background */
+        z-index: 1; 
     }
 
     .order-book-row {
@@ -153,6 +152,6 @@
         top: 0;
         left: 0;
         height: 100%;
-        z-index: 0; /* Place the background behind the text */
+        z-index: 0; 
     }
 </style>

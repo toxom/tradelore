@@ -283,7 +283,7 @@ import { writable } from 'svelte/store';
       flex-direction: column;
       gap: 16px;
       height: 100%;
-      font-size: 1.5rem;
+      font-size: 1.2rem;
     }
 
     label {
@@ -351,10 +351,13 @@ import { writable } from 'svelte/store';
     }
     
     input[type="number"] {
-        width: 80%;
-      border: 1px solid #e0e0e0;
+      position: relative;
+      width: auto;
+
+      border: 1px solid var(--primary-color);
       border-radius: 1rem;
       padding: 0.5rem;
+      background: var(--tertiary-color);
     }
     
     .currency {

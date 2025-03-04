@@ -41,7 +41,30 @@
 </script>
 
 <div class="container">
+    <div class="controls">
+        <div class="search-box">
+            <Search />
+            <input 
+                type="text" 
+                placeholder="Search..."
+            />
+        </div>
+        <div class="tabs">
+            {#each tabs as tab}
+                <button
+                    class="tab {activeTab === tab ? 'active' : ''}"
+                    on:click={() => handleTabClick(tab)}
+                >
+                    {#if tab === 'Favorites'}
+                        <Star size="16" />
+                    {/if}
+                    {tab}
+                </button>
+            {/each}
+        </div>
 
+
+    </div>
     <div class="table-container">
         <table>
             <thead>
@@ -62,29 +85,7 @@
             </tbody>
         </table>
     </div>
-    <div class="controls">
-        <div class="tabs">
-            {#each tabs as tab}
-                <button
-                    class="tab {activeTab === tab ? 'active' : ''}"
-                    on:click={() => handleTabClick(tab)}
-                >
-                    {#if tab === 'Favorites'}
-                        <Star size="16" />
-                    {/if}
-                    {tab}
-                </button>
-            {/each}
-        </div>
-        <div class="search-box">
-            <Search />
-            <input 
-                type="text" 
-                placeholder="Search..."
-            />
-        </div>
 
-    </div>
 
 </div>
 <div>
@@ -96,12 +97,13 @@
     @use "src/styles/themes.scss" as *;
         * {
             font-family: var(--font-family);
+            color: var(--text-color);
+
         }
 
     :global(body) {
         margin: 0;
         padding: 0;
-        color: #333;
     }
 
     .container {
@@ -121,10 +123,10 @@
         flex-direction: row;
         position: absolute;
         left: 1rem;
-        right: 0;
+        right: auto;
         bottom: 1rem;
-        background: var(--bg-gradient);
-        border-radius: 1rem;
+        // background: var(--bg-gradient);
+        // border-radius: 1rem;
 
         gap: 1rem;
         width: auto;
@@ -143,7 +145,6 @@
         margin-top: 0.5rem;
         margin-right: 0.5rem;
         flex: 1;
-        width: auto;
         color: var(--secondary-color);
 
         input {
@@ -177,7 +178,6 @@
         justify-content: center;
         align-items: center;
         background: transparent;
-
         gap: 0.5rem;
         padding: 1rem;
         width: auto;
@@ -185,6 +185,7 @@
         color: var(--tertiary-color);
         cursor: pointer;
         font-size: 1rem;
+        font-weight: 600;
         transition: background-color 0.2s;
 
         &:hover {
@@ -195,6 +196,7 @@
         &.active {
             background-color: var(--tertiary-color);
             color: var(--text-color);
+            font-weight: 800;
         }
     }
 
@@ -248,10 +250,8 @@
             }
 
             & tbody {
-                background: var(--primary-color);
-                &:hover {
-                    background: var(--primary-color);
-                }
+                // background: var(--primary-color);
+
 
             }
 
@@ -260,7 +260,7 @@
                 transition: 0.3s cubic-bezier(0.075, 0.82, 0.165, 1);
                 &:hover {
                 background:var(--bg-gradient-right);
-                color: green;
+                color: var(--tertiary-color);
                 font-size: 2rem;
                 cursor: pointer;
 
@@ -289,7 +289,6 @@
 
             }
             td.price {
-                font-weight: 800;
                 letter-spacing: 0.25rem;
                 width: 300px;
                 text-align: left;
@@ -297,7 +296,6 @@
 
             }
             td.value {
-                font-weight: 800;
                 letter-spacing: 0.25rem;
                 width: auto;
                 text-align: left;

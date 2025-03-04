@@ -1,30 +1,27 @@
-    import { pb } from '$lib/pocketbase';
-    import { X, Calculator, Camera, Bell, MapPin, CircleX, LogIn, User, LogOut, MessageCircle, Filter, FilterX } from 'lucide-svelte';
-	import { onMount, tick, createEventDispatcher } from 'svelte';
+import { currentLanguage, languages } from '../stores/preferences.store';
+import { tick } from 'svelte';
 
-	import { currentLanguage, languages, setLanguage } from '../stores/language.store';
-	
-    let showLanguageNotification = false;
-	let selectedLanguageName = '';
-	const dispatch = createEventDispatcher();
+let showLanguageNotification = false;
+let selectedLanguageName = '';
 
-    export async function handleLanguageChange() {
-		showLanguageNotification = true;
+export async function handleLanguageChange(event: CustomEvent<string>) {
+    showLanguageNotification = true;
 
-		const currentLang = $currentLanguage;
-		const currentIndex = languages.findIndex((lang) => lang.code === currentLang);
-		const nextIndex = (currentIndex + 1) % languages.length;
-		const nextLanguage = languages[nextIndex];
+    const languageCode = event.detail; // Extract the language code from the event
 
-		await setLanguage(nextLanguage.code);
-		selectedLanguageName = nextLanguage.name;
+    const language = languages.find((lang) => lang.code === languageCode);
 
-		await tick();
+    if (language) {
+        await currentLanguage.set(language.code); // Use the store's `set` method
+        selectedLanguageName = language.name;
 
-		setTimeout(() => {
-			showLanguageNotification = true;
-		}, 0);
-		setTimeout(() => {
-			showLanguageNotification = false;
-		}, 600);
-	}
+        await tick();
+
+        setTimeout(() => {
+            showLanguageNotification = true;
+        }, 0);
+        setTimeout(() => {
+            showLanguageNotification = false;
+        }, 600);
+    }
+}

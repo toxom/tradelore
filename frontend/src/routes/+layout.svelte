@@ -11,7 +11,7 @@
     import Auth from '$lib/overlays/Auth.svelte'
 	import Landing from '$lib/overlays/Landing.svelte'
 	import { t } from '../stores/translation.store';
-	import { currentLanguage, languages, setLanguage } from '../stores/language.store';
+	import { currentLanguage, languages } from '../stores/preferences.store';
 	import { currentTheme } from '../stores/theme.store';
     import { goto } from '$app/navigation';
 	import Language from '@tabler/icons-svelte/icons/language';
@@ -19,6 +19,15 @@
 	import Footer from '$lib/containers/Footer.svelte';
 	import StyleSwitcher from '$lib/overlays/StyleSwitcher.svelte';
     import ToggleAllButton from "$lib/buttons/ToggleAllButton.svelte"
+    import { handleLanguageChange } from '../clients/languageClient'
+    import {
+        countries,
+        timezones,
+        currencies,
+        currentCountry,
+        currentTimezone,
+        currentCurrency,
+    } from '../stores/preferences.store'
 
 	export let user: any;
 	export let onClose: () => void;
@@ -54,26 +63,7 @@
 		{ name: 'Turbo Mode', value: 'turbo', icon: Gauge },
 		{ name: 'Bone Tone', value: 'bone', icon: Bone }
 	];
-    export async function handleLanguageChange() {
-		showLanguageNotification = true;
 
-		const currentLang = $currentLanguage;
-		const currentIndex = languages.findIndex((lang) => lang.code === currentLang);
-		const nextIndex = (currentIndex + 1) % languages.length;
-		const nextLanguage = languages[nextIndex];
-
-		await setLanguage(nextLanguage.code);
-		selectedLanguageName = nextLanguage.name;
-
-		await tick();
-
-		setTimeout(() => {
-			showLanguageNotification = true;
-		}, 0);
-		setTimeout(() => {
-			showLanguageNotification = false;
-		}, 600);
-	}
     function toggleAuthOrProfile() {
         if ($currentUser) {
             showProfile = !showProfile;
@@ -157,6 +147,8 @@
 	function handleStyleClose() {
         toggleOverlay('styles'); 
 	}
+
+
 
 </script>
 
@@ -304,11 +296,12 @@
 
     *  {
 		top: 0;
-		font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+		font-family:var(--font-family);
+        background: var(--bg-color);
     }
 
 	main {
-        background: var(--bg-gradien);
+        background: var(--bg-gradient);
 		margin: 0;
 		padding: 0;
 		display: flex;

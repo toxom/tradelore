@@ -28,16 +28,16 @@ $themes: (
 	),
 	dark: (
 		bg-color: #000000,
-		bg-gradient: linear-gradient(to left, rgb(55, 42, 42), rgb(35, 21, 21)),
-		bg-gradient-r: linear-gradient(to top,  rgb(55, 42, 42), rgb(35, 21, 21)),
-		bg-gradient-left: linear-gradient(to left,  rgb(55, 42, 42), rgb(35, 21, 21)),
-		bg-gradient-right: linear-gradient(to right, rgb(55, 42, 42), rgb(35, 21, 21)),
+		bg-gradient: linear-gradient(to bottom, #000000, #251d28),
+		bg-gradient-r: linear-gradient(to top, #000000, #251d28),
+		bg-gradient-left: linear-gradient(to left, #000000, #251d28),
+		bg-gradient-right: linear-gradient(to right,#000000, #251d28),
 		text-color: #f0f0f0,
 		placeholder-color: rgb(240, 240, 240, 0.5),
 		font-family: 'Montserrat',
-		primary-color: #3b3838,
-		secondary-color: #696969,
-		tertiary-color: #7f8c8d,
+		primary-color: #000000,
+		secondary-color: #251d28,
+		tertiary-color: #4d4052,
 		accent1: linear-gradient(45deg, #4CAF50, #81C784)
 	)
 );

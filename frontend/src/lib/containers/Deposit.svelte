@@ -21,12 +21,13 @@
     @use "src/styles/themes.scss" as *;
         * {
             font-family: var(--font-family);
+            color: var(--text-color);
+
         }
 
     :global(body) {
         margin: 0;
         padding: 0;
-        color: #333;
     }
 
     .container {

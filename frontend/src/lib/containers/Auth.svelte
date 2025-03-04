@@ -1,55 +1,97 @@
 <script lang="ts">
+      import { pb, signIn, signUp, signOut } from '$lib/pocketbase';
     import { fade, fly } from 'svelte/transition';
     import { createEventDispatcher } from 'svelte';
     import { t } from '../../stores/translation.store';
-    export let showLogin = true; // Start with login form visible
+
+    export let showLogin = true;
     export let errorMessage: string | null = null;
   
     const dispatch = createEventDispatcher();
-  
+    let email = '';
+    let password = '';
+    let loading = false;
+
     function toggleForm() {
       showLogin = !showLogin;
-      errorMessage = null; // Clear error message on toggle
+      errorMessage = null; 
     }
   
     async function handleFormSubmit(event: Event) {
       event.preventDefault();
-      const formData = new FormData(event.target as HTMLFormElement);
-      const email = formData.get('email') as string;
-      const password = formData.get('password') as string;
-  
+      loading = true;
+      errorMessage = null;
+      
       try {
         if (showLogin) {
-          console.log('Logging in:', { email, password });
-          dispatch('login', { email });
+          console.log('Attempting login with:', email);
+          const authData = await signIn(email, password);
+          
+          if (authData) {
+            console.log('Login successful:', authData);
+            dispatch('login', { email, success: true });
+          } else {
+            errorMessage = 'Login failed. Please check your credentials.';
+            dispatch('login', { email, success: false });
+          }
         } else {
-          console.log('Signing up:', { email, password });
-          dispatch('signup', { email });
+          console.log('Attempting signup with:', email);
+          const user = await signUp(email, password);
+          
+          if (user) {
+            console.log('Signup successful:', user);
+            dispatch('signup', { email, success: true });
+          } else {
+            errorMessage = 'Signup failed. This email might already be registered.';
+            dispatch('signup', { email, success: false });
+          }
         }
       } catch (error) {
         console.error('Form submission error:', error);
-        errorMessage = 'An error occurred. Please try again.'; 
+        errorMessage = error instanceof Error ? error.message : 'An error occurred. Please try again.';
+      } finally {
+        loading = false;
       }
     }
-  </script>
+</script>
 
-  <div class="auth-container" transition:fade={{ duration: 200 }}>
-    <div class="auth-card" transition:fly={{ y: 50, duration: 300 }}>
-
-
-        {#if errorMessage}
-        <p class="error-message">{errorMessage}</p>
-      {/if}
-      <form on:submit={handleFormSubmit}>
-        <input type="email" name="email" placeholder="Email" required />
-        <input type="password" name="password" placeholder="Password" required />
-        <button type="submit"> {$t('nav.signup')}</button>
-      </form>
-    </div>
+<div class="auth-container" transition:fade={{ duration: 200 }}>
+  <div class="auth-card" transition:fly={{ y: 50, duration: 300 }}>
+    <h2>{showLogin ? $t('nav.login') : $t('nav.signup')}</h2>
+    
+    {#if errorMessage}
+      <p class="error-message">{errorMessage}</p>
+    {/if}
+    
+    <form on:submit={handleFormSubmit}>
+      <input type="email" bind:value={email} placeholder="Email" required />
+      <input type="password" bind:value={password} placeholder="Password" required />
+      
+      <button type="submit" disabled={loading}>
+        {#if loading}
+          Loading...
+        {:else}
+          {showLogin ? $t('nav.login') : $t('nav.signup')}
+        {/if}
+      </button>
+    </form>
+    
+    <p>
+      {showLogin ? "Don't have an account?" : "Already have an account?"}
+      <button class="toggle-button" on:click={toggleForm}>
+        {showLogin ? $t('nav.signup') : $t('nav.login')}
+      </button>
+    </p>
   </div>
+</div>
   
-  <style lang="scss">
-    .auth-container {
+<style lang="scss">
+  @use "src/styles/themes.scss" as *;
+  
+  * {
+      font-family: var(--font-family);
+  }        
+  .auth-container {
       position: relative;
       width: auto;
       height: auto;

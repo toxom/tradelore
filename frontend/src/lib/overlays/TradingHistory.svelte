@@ -154,11 +154,11 @@
     @use "src/styles/themes.scss" as *;
         * {
             font-family: var(--font-family);
+            color: var(--text-color);
         }    
         .order-history {
         width: 100%;
         border-collapse: collapse;
-        font-family: Arial, sans-serif;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         background: transparent;
     }
@@ -172,11 +172,11 @@
 
     .order-history th {
         font-weight: 600;
-        color: #333;
+        color: var(--text-color);
     }
 
     .order-history tbody tr:hover {
-        background-color: #f1f1f1;
+        background-color: var(--tertiary-color);
     }
 
     .order-history .side-buy {

@@ -1,18 +1,27 @@
 import type { RecordModel } from 'pocketbase'; 
 
-export interface User extends RecordModel {
-    username: string;
-    email: string;
-    emailVisibility: boolean;
-    verified: boolean;
-    name?: string;
-    avatar: string;
-    role: string;
-    network_preferences: string[];
-    preferences: string[];
-    messages: string[];
-    last_login: Date;
+export interface User {
+  id: string;
+  username?: string;
+  email: string;
+  emailVisibility: boolean;
+  verified: boolean;
+  name?: string;
+  firstName?: string;
+  lastName?: string;
+  avatar?: string;
+  created: string;
+  updated: string;
+  themePreference?: string;
+  languagePreference?: string;
+  residence?: string;
+  timezone?: string;
+  defaultCurrency?: string;
+  tradingExperience?: string;
+  riskTolerance?: string;
+  notificationPreferences?: Record<string, boolean>;
 }
+
 
 interface FinancialRecord {
     // Define the structure of a financial record

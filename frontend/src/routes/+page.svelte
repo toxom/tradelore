@@ -584,7 +584,9 @@
     .pairs-overlay {
         width: auto;
         height: 10rem;
-        top: 2rem;
+        font-size: 0.8rem;
+        top: 3rem;
+        border-radius: 0;
         left: 0;
         right: 0;
         bottom: auto;

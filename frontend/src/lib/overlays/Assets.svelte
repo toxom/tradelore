@@ -13,7 +13,7 @@
         handleMouseLeave,
         handleDragEnd
     } from "$lib/actions/toggling";
-    import Wallet from "$lib/containers/Wallet.svelte"
+    import Wallet from "$lib/containers/Wallets.svelte"
     import Deposit from "$lib/containers/Deposit.svelte"
     import TradingPairs from "$lib/overlays/TradingPairs.svelte"
     import TradingHistory from "$lib/overlays/TradingHistory.svelte"

@@ -66,14 +66,14 @@
       align-items: center;
       justify-content: center;
       gap: 1rem;
-      padding: 0.5rem;
+      // padding: 0.5rem;
       font-size: 1rem;
       border: 1px solid;
       border-color: var(--secondary-color);
       border-radius: 1rem;
       background: var(--primary-color);
       cursor: pointer;
-      width: 200;
+      width: auto;
         color: var(--text-color);
       &.active {
         background: var(--secondary-color);
@@ -81,7 +81,6 @@
 
     span {
       display: flex;
-     background-color: red;
       flex-direction: column;
     }
     }
@@ -114,7 +113,7 @@
     }
 
     .dropdown-item {
-        width: 100px;
+        width: 100%;
       border: none;
       background: #e1e1e1;
       margin-left: 0;

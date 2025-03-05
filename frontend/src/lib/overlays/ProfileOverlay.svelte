@@ -2,8 +2,9 @@
     import { onMount } from 'svelte';
     import { get } from 'svelte/store';
     import { fade, slide } from 'svelte/transition';
+    
     import { pb } from '$lib/pocketbase';
-    import { Atom, BadgeCheck, Camera, Currency, Globe, History, LogOutIcon, Mail, MapPinned, SquareUserRound } from 'lucide-svelte';
+    import { Atom, BadgeCheck, Camera, Currency, Edit, Globe, History, LogOutIcon, Mail, MapPinned, SquareUserRound } from 'lucide-svelte';
     import { currentUser } from '$lib/pocketbase';
     import { createEventDispatcher } from 'svelte';
     import type { User } from '../../types/accounts';
@@ -15,15 +16,18 @@
         currentCountry,
         currentTimezone,
         currentCurrency,
-    } from '../../stores/preferences.store'
+    } from 'stores/preferences.store'
     import {
 	handleCountryChange,
         handleCurrencyChange,
         handleTimezoneChange
-    } from '../../clients/preferenceClient'
+    } from 'clients/preferenceClient'
+    import TokenPanel from '../admin/TokenPanel.svelte'
+    import TabSelector from '$lib/containers/TabSelector.svelte';
 
     export let user: any;
     export let onClose: () => void;
+    let activeTab = 'ID'; 
 
 
     let isEditing = false;
@@ -69,37 +73,40 @@
 
 <div class="modal-overlay" on:click={handleOutsideClick} transition:fade={{ duration: 300 }}>
     <div class="modal-content" on:click|stopPropagation>
-        <button class="logout-button" on:click={logout} transition:fade={{ duration: 300 }}>
-            <LogOutIcon size={24} />
-            <span>Logout</span>
-        </button>
-        {#if $currentUser}
-        <div class="profile-header">
-                <div class="avatar-container">
-                    {#if user.avatar}
-                        <img src={pb.getFileUrl(user, user.avatar)} alt="User avatar" class="avatar" />
-                    {:else}
+        <TabSelector
+        tabs={['ID', 'Preferences', 'Settings', 'Admin']}
+        bind:activeTab
+        on:tabChange={(e) => { 
+            activeTab = e.detail.tab; 
+            console.log('Active tab:', activeTab); 
+        }}
+    />
+    
+    <!-- Tab content -->
+    <div class="tab-content">
+        {#if activeTab === 'ID'}
+
+        <div class="column-content">
+            <div class="avatar-container">
+                {#if user.avatar}
                     <img src={pb.getFileUrl(user, user.avatar)} alt="User avatar" class="avatar" />
+                {:else}
+                <img src={pb.getFileUrl(user, user.avatar)} alt="User avatar" class="avatar" />
+    
+                {/if}
+            </div>             
+             <div class="info-row">
+                <span class="id">
+                    {user.firstName}
+                </span>
+                <span class="id">
+                    {user.lastName}
+                </span>
+             </div>
 
-                    {/if}
-                </div>
- 
-                <div class="profile-info">
-                <div class="info-row">
-                    <!-- <span class="label"></span> -->
-                    <span class="id">
-                        {user.firstName}
-                    </span>
-                    <span class="id">
-                        {user.lastName}
-                    </span>
-                </div>
 
-
+            <div class="profile-info">
                 <div class="dropdown-section">
-                    <span class="label">
-                        <MapPinned/>
-                    </span>  
                     <span class="label">
                         <Dropdown
                             options={countries}
@@ -108,32 +115,103 @@
                         />
                     </span>                      
                 </div>   
-                <!-- <div class="info-row">
-                    <span class="label">
-                        <MapPinned/>
-                    </span>                     
-                    <span>{user.residence}</span>
-                </div>    -->
-                <div class="dropdown-section">
-                    <span>Timezone</span>
+                <div class="info-row">
+                    
+                    {#if isEditing}
+                    <input bind:value={editedUser.name} />
+
+                    <button on:click={saveChanges}>Save</button>
+                    <button on:click={toggleEdit}>Cancel</button>
+
+
+                    {:else}
 
                     <span class="label">
-                        <Dropdown
-                            options={timezones}
-                            selectedValue={get(currentTimezone)} 
-                            on:select={handleTimezoneChange}
-                        />
-                    </span>                      
+                        <span class="label">{user.name || 'Not set'}</span>
+                        <SquareUserRound/>
+                    </span>
+                    <button on:click={toggleEdit}><Edit/></button>
+
+                    {/if}
+                </div> 
+
+                <div class="info-row">
+                    <span class="label">
+                        <span>{user.email}</span>
+                        <Mail/>
+                    </span>
                 </div>   
-                <div class="dropdown-section">
-                    <span>Base Currency</span>
 
+
+            <div class="info-row">
+                <span class="label">
+                    <span>{new Date(user.created).toLocaleString()}</span>
+                    <Atom/>
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="label">
+                    <span>{new Date(user.updated).toLocaleString()}</span>
+                    <History/>
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="label">
+                    <span>{user.verified ? 'Yes' : 'No'}</span>
+                    <BadgeCheck/>
+                </span>                    
+            </div>
+
+
+            </div>  
+        </div>
+
+        {:else if activeTab === 'Preferences'}
+        <div class="column-content">
+            <div class="dropdown-section">
+                <span>Timezone</span>
+
+                <span class="label">
                     <Dropdown
-                        options={currencies}
-                        selectedValue={get(currentCurrency)} 
-                        on:select={handleCurrencyChange}
+                        options={timezones}
+                        selectedValue={get(currentTimezone)} 
+                        on:select={handleTimezoneChange}
                     />
-                </div>
+                </span>     
+                <span>Base Currency</span>
+                <span class="label">
+
+                <Dropdown
+                    options={currencies}
+                    selectedValue={get(currentCurrency)} 
+                    on:select={handleCurrencyChange}
+                />
+            </span>     
+
+            </div>                 
+            </div>   
+            <div class="dropdown-section">
+
+        </div>
+        {:else if activeTab === 'Settings'}
+        {:else if activeTab === 'Admin'}
+        <TokenPanel />
+
+        {/if}
+    </div>
+        <button class="logout-button" on:click={logout} transition:fade={{ duration: 300 }}>
+            <LogOutIcon size={24} />
+            <span>Logout</span>
+        </button>
+        {#if $currentUser}
+        <div class="profile-header">
+
+ 
+                <div class="profile-info">
+
+
+
+  
 
                 <!-- <div class="info-row">
                     <span class="label">
@@ -143,57 +221,14 @@
                 </div>    -->
                 </div>  
                  
-                <div class="profile-info">
-                    <div class="info-row">
-                        {#if isEditing}
-                            <input bind:value={editedUser.name} />
-                        {:else}
-                            <span class="label">
-                                <SquareUserRound/>
-                            </span>
-                            <span>{user.name || 'Not set'}</span>
-                        {/if}
-                    </div> 
-                    <div class="info-row">
-                        <span class="label">
-                            <Mail/>
-                        </span>
-                        <span>{user.email}</span>
-                    </div>   
 
-
-                <div class="info-row">
-                    <span class="label">
-                        <Atom/>
-                    </span>
-                    <span>{new Date(user.created).toLocaleString()}</span>
-                </div>
-                <div class="info-row">
-                    <span class="label">
-                        <History/>
-                    </span>
-                    <span>{new Date(user.updated).toLocaleString()}</span>
-                </div>
-                <div class="info-row">
-                    <span class="label">
-                        <BadgeCheck/>
-                    </span>                    
-                    <span>{user.verified ? 'Yes' : 'No'}</span>
-                </div>
- 
- 
-                </div>  
             </div>
 
             <div class="actions">
-                {#if isEditing}
-                    <button on:click={saveChanges}>Save</button>
-                    <button on:click={toggleEdit}>Cancel</button>
-                {:else}
-                    <button on:click={toggleEdit}>Edit</button>
-                {/if}
+
                 <button on:click={onClose}>Close</button>
             </div>
+
         {:else}
             <div class="no-user-message">
                 <p>No user information available.</p>
@@ -208,7 +243,7 @@
     * {
         font-family: var(--font-family);
     }      
-    
+
     .modal-overlay {
         position: fixed;
         top: 4rem;
@@ -261,20 +296,36 @@
             rgba(70, 118, 114, 0) 100%
             ); */
         backdrop-filter: blur(40px);        
-        padding: 2rem;
-        border-radius: 20px;
-        /* border-top-left-radius: 0px;
-        border-top-right-radius: 0px;
-        /* border-bottom-left-radius: 8px; */
-        border-bottom-right-radius: 8px;
-        /* max-width: 100%; */
+        padding: 0;
+        display: flex;
+        flex-direction: column;
         border: 1px solid rgb(53, 53, 53);
-
-        /* max-width: 500px; */
-        width: 100vw;
+        top: 0;
+        margin-left: 0;
+        bottom: auto;
+        width: 100%;
+        height: 93vh;
+        overflow: auto;
         /* height: 100vh; */
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
+
+    .tab-content {
+        margin: 0;
+
+        height: auto;
+        width: 100%;
+    }
+
+    .column-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: auto;
+        width: 100%;
+    }
+
 
     .profile-header {
         display: flex;
@@ -342,19 +393,29 @@
     .info-row {
         display: flex;
         flex-direction: row;
-        justify-content: left;
+        justify-content: center;
         align-items: center;
         position: relative;
         margin: 0;
         left: 0;
         right: 0;
-        width: 20rem;
+        margin-top: 1rem;
+        width: 100%;
         flex-grow: 1;
         gap: 1rem;
         margin-bottom: 0.5rem;
         // padding: 1rem;
         color: var(--text-color);
         font-size: 1.5rem;
+
+        // & .id {
+        // }
+
+        & .label {
+            width: 100%;
+            flex-direction: row-reverse;
+            justify-content: left;
+        }
     }
 
     .label {
@@ -399,5 +460,16 @@
             flex-direction: row;
             gap: 1rem;
         }
+        &.label {
+            display: flex;
+            width: 80vw;
+        }
     }
-</style>
+
+    @media (max-width: 1000px) {
+        .modal-content {
+            width: 90%;
+        }
+
+    }
+    </style>

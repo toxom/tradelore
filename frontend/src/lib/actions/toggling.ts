@@ -8,7 +8,7 @@ type OverlayState = {
 };
 
 export const overlayStateAssets = writable<OverlayState>({
-    wallet: { active: false, expanded: true },
+    wallet: { active: true, expanded: false },
     deposit: { active: true, expanded: false },
     withdraw: { active: true, expanded: false },
     earn: { active: true, expanded: false },
@@ -18,12 +18,12 @@ export const overlayStateAssets = writable<OverlayState>({
 
 // Second range of overlays
 export const overlayStateTrade = writable<OverlayState>({
-    pairs: { active: true, expanded: false },
-    book: { active: true, expanded: false },
-    progress: { active: true, expanded: false },
-    history: { active: true, expanded: false },
-    order: { active: true, expanded: false },
-    chart: { active: true, expanded: false }
+    pairs: { active: false, expanded: true },
+    book: { active: false, expanded: true },
+    progress: { active: false, expanded: true },
+    history: { active: false, expanded: true },
+    order: { active: false, expanded: true },
+    chart: { active: false, expanded: true }
 });
 
 export let activeLink = '/'; 

@@ -16,7 +16,6 @@
         tokens,
 
     } from 'clients/tokenClient'
-
  
 
 
@@ -162,10 +161,11 @@ onMount(async () => {
     .toolbar {
         background-color: var(--primary-color);
         position: sticky;
-        top: 3rem;
+        top: 0;
         left: 0;
         right: 0;
         width: 100%;
+        height: auto;
     }
     .row-input {
         background: var(--primary-color);
@@ -219,17 +219,30 @@ onMount(async () => {
         border-collapse: collapse;
 
     }
+    tbody tr {
+                transition: 0.3s cubic-bezier(0.075, 0.82, 0.165, 1);
+                &:hover {
+                background:var(--bg-gradient-right);
+                color: var(--text-color);
+                font-size: 1rem;
+                cursor: pointer;
 
+            }
+        }
     tr td {
         justify-content: center;
         align-items: center;
         text-align: left;
+        
     }
+    
 
     th, td {
         padding: 10px;
         text-align: left;
-        border-bottom: 1px solid var(--secondary-color);
+        // border-bottom: 1px solid var(--secondary-color);
+
+
     }
 
     th:nth-child(1), td:nth-child(1) {
@@ -248,7 +261,7 @@ onMount(async () => {
     th:nth-child(3), td:nth-child(3) {
         word-wrap: break-word;
         white-space: normal;
-        border-right: 1px solid var(--primary-color);
+        // border-right: 1px solid var(--primary-color);
         font-style: italic;
 
     }

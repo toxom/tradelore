@@ -41,31 +41,32 @@
 </script>
 
 <div class="container">
-    <div class="controls">
-        <div class="search-box">
-            <Search />
-            <input 
-                type="text" 
-                placeholder="Search..."
-            />
-        </div>
-        <div class="tabs">
-            {#each tabs as tab}
-                <button
-                    class="tab {activeTab === tab ? 'active' : ''}"
-                    on:click={() => handleTabClick(tab)}
-                >
-                    {#if tab === 'Favorites'}
-                        <Star size="16" />
-                    {/if}
-                    {tab}
-                </button>
-            {/each}
-        </div>
 
-
-    </div>
     <div class="table-container">
+        <div class="controls">
+            <div class="search-box">
+                <Search />
+                <input 
+                    type="text" 
+                    placeholder="Search..."
+                />
+            </div>
+            <div class="tabs">
+                {#each tabs as tab}
+                    <button
+                        class="tab {activeTab === tab ? 'active' : ''}"
+                        on:click={() => handleTabClick(tab)}
+                    >
+                        {#if tab === 'Favorites'}
+                            <Star size="16" />
+                        {/if}
+                        {tab}
+                    </button>
+                {/each}
+            </div>
+    
+    
+        </div>
         <table>
             <thead>
                 <tr>
@@ -109,25 +110,25 @@
     .container {
         display: flex;
         flex-direction: column;
-        margin: 0;
-        padding: 0;
-        left: 0;
-        min-width: 300px;
+        height: auto;
+        width: auto;
         overflow-x: hidden;
- 
     }
 
 
     .controls {
         display: flex;
         flex-direction: row;
-        position: absolute;
-        left: 1rem;
-        right: auto;
-        bottom: 1rem;
+        position: sticky;
+        justify-content: flex-end;
+        align-items: center;
+        left: autp;
+        right: 1rem;
+        bottom: auto;
+        top: 1rem;
+        height: auto;
         // background: var(--bg-gradient);
         // border-radius: 1rem;
-
         gap: 1rem;
         width: auto;
         z-index: 10;
@@ -137,24 +138,25 @@
         display: flex;
         align-items: center;
         gap: 0;
-        padding: 0.5rem;
+        padding: 0 0.5rem;
 
         border-radius: 1rem;
-        background: white;
-        height: 2rem;
-        margin-top: 0.5rem;
+        background: var(--tertiary-color);
+        height: auto;
+
         margin-right: 0.5rem;
-        flex: 1;
         color: var(--secondary-color);
 
         input {
             border: none;
-            width: 300px;
+            width: auto;
             outline: none;
             font-size: 1rem;
             border-radius: 1rem;
             margin-left: 1rem;
             padding: 0.5rem 1rem;
+            background: var(--tertiary-color);
+
         }
 
     }
@@ -164,10 +166,8 @@
         flex-direction: row;
         justify-content: flex-start;
         gap: 0;
-        margin-top: 0.5rem;
         margin-left: 0;
         margin-bottom: 0;
-        bottom: 1rem;
         width: auto;
         padding: 0;
     }
@@ -179,7 +179,6 @@
         align-items: center;
         background: transparent;
         gap: 0.5rem;
-        padding: 1rem;
         width: auto;
         border: none;
         color: var(--tertiary-color);
@@ -212,6 +211,8 @@
         right: 0;
         border-collapse: collapse;
         overflow-x: hidden;
+        padding: 1rem;
+
 
 
         &.static {
@@ -243,6 +244,7 @@
         table {
             margin-left: 1rem;
             border-collapse: collapse;
+            position: absolute;
 
             & thead {
                 height: 3rem;
@@ -275,7 +277,7 @@
             th, td {
                 padding: 0.75rem 0.5rem;
                 text-align: left;
-                border-bottom: 1px solid var(--primary-color);
+                // border-bottom: 1px solid var(--primary-color);
                 border-left: none;
                 height: 2.5rem;
             }
@@ -285,14 +287,14 @@
                 letter-spacing: 0.25rem;
                 width: 100px;
                 text-align: left;
-                border-right: 1px solid var(--tertiary-color);
+                // border-right: 1px solid var(--tertiary-color);
 
             }
             td.price {
                 letter-spacing: 0.25rem;
                 width: 300px;
                 text-align: left;
-                border-right: 1px solid var(--tertiary-color);
+                // border-right: 1px solid var(--tertiary-color);
 
             }
             td.value {
@@ -309,8 +311,8 @@
                 font-weight: 200;
                 height: 3rem;
                 padding: 0.5rem;
-        background: transparent !important;
-                border-bottom: 1px solid var(--secondary-color);
+        background: var(--secondary-color);
+                // border-bottom: 1px solid var(--secondary-color);
             }
         }
     }

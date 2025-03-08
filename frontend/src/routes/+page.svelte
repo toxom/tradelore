@@ -116,15 +116,21 @@
     @use "src/styles/themes.scss" as *;
     * {
         font-family: var(--font-family);
-        background-color: var(--secondary-color);
+        background: var(--bg-color);
     }  
 
 
 
 .overlay {
 
-    background-color: var(--bg-color);
-
+    background: var(--secondary-color);
+    // box-shadow: 0px -1px 10px 1px var(--text-color);
+    overflow-x: hidden;
+        overflow-y: scroll;
+        scrollbar-width:2px;
+        scrollbar-color:transparent transparent;
+        scroll-behavior: smooth; 
+        border: 1px solid var(--tertiary-color);
 }
 
 
@@ -154,18 +160,21 @@
         border-radius: 2rem;
         font-size: 2rem;
         overflow: none;
-        background: var(--bg-gradient);
+        box-shadow: none;
+        background: var(--secondary-color);
+        
         &.pairs-expanded {
             height: auto;
-            top: 2rem;
-            left: 0;
-            right: 30rem;
             width: auto;
-            bottom: 2rem;
+
+            top: 4rem;
+            left: 4rem;
+            right: 4rem;
+            bottom: 8rem;
             overflow-x: hidden;
         overflow-y: scroll;
         scrollbar-width:2px;
-        scrollbar-color: t transparent;
+        scrollbar-color: transparent;
         scroll-behavior: smooth; 
         font-size: 1rem;
 
@@ -195,10 +204,10 @@
         height: 20rem;
         overflow-y: scroll;
         scrollbar-width:2px;
-        scrollbar-color: var(--secondary-color) transparent;
+        scrollbar-color: var(--tertiary-color) transparent;
         scroll-behavior: smooth;
         z-index: 1;
-        background: var(--bg-gradient-r);
+        box-shadow: none;
 
         &.history-expanded {
             height: auto;
@@ -215,11 +224,10 @@
     .chart-overlay {
         top: 15rem;
         left: 0;
-        right: calc(500px + 2rem);
-        bottom: 2rem;
+        right: calc(500px + 1rem);
+        bottom: 21%;
         height: auto;
-        border: 1px solid transparent;
-        background: var(--secondary-color);
+        border: 1px solid transparent; 
         &.chart-expanded {
             top: 12rem;
             right: 0;
@@ -229,7 +237,6 @@
             width: auto;
             z-index: 2000;
             cursor: default;
-            background: var(--bg-gradient);
 
         }
     }
@@ -237,12 +244,10 @@
         height: auto;
         width: 500px;
         top: calc(50% + 2rem);
-        bottom: 2rem;
+        bottom:4rem;
         right: 0;
         z-index: 1;
-        background: var(--bg-gradient-left);
         color: var(--text-color);
-
         &.order-expanded {
             height: auto;
             width: 500px;
@@ -265,7 +270,7 @@
         scrollbar-color: var(--secondary-color) transparent;
         scroll-behavior: smooth;
         z-index: 1;
-        background: var(--bg-gradient-left);
+        box-shadow: none;
 
         &.book-expanded {
             left: auto;

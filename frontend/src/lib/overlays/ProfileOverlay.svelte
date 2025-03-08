@@ -24,6 +24,7 @@
     } from 'clients/preferenceClient'
     import TokenPanel from '../admin/TokenPanel.svelte'
     import TabSelector from '$lib/containers/TabSelector.svelte';
+    import WalletForm from '$lib/overlays/WalletForm.svelte';
 
     export let user: any;
     export let onClose: () => void;
@@ -81,7 +82,13 @@
             console.log('Active tab:', activeTab); 
         }}
     />
-    
+    <div class="actions">
+        <button class="logout-button" on:click={logout} transition:fade={{ duration: 300 }}>
+            <LogOutIcon size={24} />
+            <span>Logout</span>
+        </button>
+        <button class="logout-button" on:click={onClose}>X</button>
+    </div>
     <!-- Tab content -->
     <div class="tab-content">
         {#if activeTab === 'ID'}
@@ -195,14 +202,14 @@
         </div>
         {:else if activeTab === 'Settings'}
         {:else if activeTab === 'Admin'}
+        <WalletForm />
+
         <TokenPanel />
 
         {/if}
     </div>
-        <button class="logout-button" on:click={logout} transition:fade={{ duration: 300 }}>
-            <LogOutIcon size={24} />
-            <span>Logout</span>
-        </button>
+
+
         {#if $currentUser}
         <div class="profile-header">
 
@@ -224,10 +231,7 @@
 
             </div>
 
-            <div class="actions">
 
-                <button on:click={onClose}>Close</button>
-            </div>
 
         {:else}
             <div class="no-user-message">
@@ -305,14 +309,17 @@
         bottom: auto;
         width: 100%;
         height: 93vh;
-        overflow: auto;
+        overflow-y: scroll;
+    scrollbar-width:2px;
+    scrollbar-color: var(--secondary-color) transparent;
+    scroll-behavior: smooth; 
         /* height: 100vh; */
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
 
     .tab-content {
         margin: 0;
-
+        overflow-y: auto;
         height: auto;
         width: 100%;
     }
@@ -426,7 +433,12 @@
     .actions {
         display: flex;
         justify-content: flex-end;
+        position: absolute;
+        top: 0;
+        right: 0;
+        margin-right: 0;
         gap: 0.5rem;
+        background-color: var(--bg-color);
     }
 
     button {
@@ -442,12 +454,14 @@
         opacity: 0.8;
     }
 
-    .logout-button {
+   button.logout-button {
         display: flex;
         gap: 10px;
-        position: absolute;
+        // position: absolute;
         right: 20px;
         top: 20px;
+        background: var(--tertiary-color);
+        width: auto;
     }
 
     span {

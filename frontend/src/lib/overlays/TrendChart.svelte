@@ -46,9 +46,9 @@
                         enableResize: false,
                     },
                 },
-                width: containerWidth, 
-                height: containerHeight,
-                autoSize: false,
+                width: containerWidth, // Set width to 90% of container width
+                height: containerHeight, // Set height to 90% of container height
+                autoSize: true, // Automatically adjust size to fit the container
             };
 
             const chart = createChart(document.getElementById('container'), chartOptions);
@@ -59,8 +59,9 @@
                         type: 'volume',
                     },
                 },
-                1
+                1 // Pane index
             );
+            // Moving the series to a different pane
             volumeSeries.moveToPane(2);
             const secondPane = chart.panes()[1];
 secondPane.setHeight(300);
@@ -218,7 +219,6 @@ candlesPane.setHeight(containerHeight);
     height: 94%; 
     margin: 0 auto; 
     padding: 2rem;
-    box-sizing: border-box; 
 }
 
     .progress {

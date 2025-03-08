@@ -60,10 +60,12 @@
         gap: 1rem;
         margin-bottom: 2rem;
         text-align: left;
+        color: var(--text-color);
+
         & .value {
             font-size: 4rem;
         font-weight: 600;
-        color: #28a745; /* Green for positive values */
+        color: var(--text-color);
         }
         & .label {
             font-size: 2rem;
@@ -84,7 +86,7 @@
 
     .recent-activity h3 {
         font-size: 1.25rem;
-        color: #333;
+        color: var(--text-color);
         margin-bottom: 1rem;
     }
 
@@ -124,15 +126,12 @@
             & .value {
                 font-size: 2.5rem;
             font-weight: 600;
-            color: #28a745; /* Green for positive values */
             }
             & .label {
                 font-size: 2rem;
-                color: #666;
             }
             & .conversion {
                 font-size: 2rem;
-                color: #666;
                 font-style: italic;
             }
         }
@@ -157,15 +156,12 @@
             & .value {
                 font-size: 2rem;
             font-weight: 600;
-            color: #28a745; /* Green for positive values */
             }
             & .label {
                 font-size: 1.5rem;
-                color: #666;
             }
             & .conversion {
                 font-size: 1.5rem;
-                color: #666;
                 font-style: italic;
             }
         }
@@ -191,15 +187,12 @@
             & .value {
                 font-size: 2rem;
             font-weight: 600;
-            color: #28a745; /* Green for positive values */
             }
             & .label {
                 font-size: 1.5rem;
-                color: #666;
             }
             & .conversion {
                 font-size: 1.5rem;
-                color: #666;
                 font-style: italic;
             }
         }

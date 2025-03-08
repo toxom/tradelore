@@ -14,16 +14,31 @@
 $themes: (
 	light: (
 		bg-color: #ffffff,
-		bg-gradient: linear-gradient(to bottom, #ffffff, #d5d5d5),
-		bg-gradient-r: linear-gradient(to top, #ffffff, #d5d5d5),
-		bg-gradient-left: linear-gradient(to left, #ffffff, #d5d5d5),
-		bg-gradient-right: linear-gradient(to right, #ffffff, #d5d5d5),
-		text-color: #000000,
+		bg-gradient: linear-gradient(to bottom, #ffffff, #9cc5e47f),
+		bg-gradient-r: linear-gradient(to top, #ffffff, #54aaeb7f),
+		bg-gradient-left: linear-gradient(to left, #ffffff, #54aaeb7f),
+		bg-gradient-right: linear-gradient(to right, #ffffff, #54aaeb7f),
+		bg-gradient-fade: linear-gradient(
+			180deg, 
+
+			rgba(255, 255, 255, 0.25),
+			rgba(255, 255, 255, 0.50),
+			rgba(255, 255, 255, 0.75),
+
+			rgba(255, 255, 255, 0.5),
+
+			rgba(84, 169, 235, 0.1),
+			rgba(84, 169, 235, 0.2),
+			rgba(84, 169, 235, 0.3),
+			rgba(84, 169, 235, 0.4),
+			rgba(84, 169, 235, 0.5),
+		),
+		text-color: #54A9EB,
 		placeholder-color: rgb(255, 255, 255, 0.5),
 		font-family: 'Merriweather',
 		primary-color: #f4f4f4,
-		secondary-color: #dfdfdf,
-		tertiary-color: #afafaf,
+		secondary-color: #f3f9fe,
+		tertiary-color: #337eb8,
 		accent1: linear-gradient(45deg, #4CAF50, #81C784)
 	),
 	dark: (
@@ -32,6 +47,11 @@ $themes: (
 		bg-gradient-r: linear-gradient(to top, #000000, #251d28),
 		bg-gradient-left: linear-gradient(to left, #000000, #251d28),
 		bg-gradient-right: linear-gradient(to right,#000000, #251d28),
+		bg-gradient-fade: linear-gradient(
+			135deg, 
+			rgba(255, 255, 255, 0.10),
+			rgba(255, 255, 255, 0.01)  
+		),
 		text-color: #f0f0f0,
 		placeholder-color: rgb(240, 240, 240, 0.5),
 		font-family: 'Montserrat',
@@ -89,15 +109,16 @@ $themes: (
 	}
 }
 .overlay.expanded {
-	width: 98%; 
-	height: 90%; 
-	top: 3%;
+	width: auto; 
+	height: auto; 
+	top: auto;
 	left: auto;
 	right: auto;
 	bottom: 500px;
 	z-index: 2000;
 	cursor: default;
 	box-shadow: -100px -1px 100px 4px rgba(255, 255, 255, 0.2);
+	border: 3px solid transparent;
 
 }
 
@@ -144,14 +165,16 @@ $themes: (
 	gap: 10px;
 	width: auto;
 	height: 2.5rem;
-	border: 1px solid black;
+	border: 1px solid transparent;
+	color: var(--text-color);
 	border-radius: 20px;
-	background: white;
+	background: var(--secondary-color);
 	padding: 0.5rem 1rem;
 	cursor: pointer;
 	transition: all 0.3s ease;
 	overflow: hidden;
 	font-size: 16px;
+	font-weight: 800;
 }
 
 .toggle-button:hover,
@@ -183,9 +206,10 @@ $themes: (
 	gap: 10px;
 	width: auto;
 	height: 2.5rem;
-	border: 1px solid black;
+	border: 1px solid var(--secondary-color);
+	color: var(--text-color);
 	border-radius: 0.75rem;
-	background: white;
+	background: var(--bg-color);
 	padding: 2rem;
 	cursor: pointer;
 	transition: all 0.3s ease;
@@ -207,7 +231,7 @@ $themes: (
 .close-button, .expand-button {
 	display: none;
 	position: absolute;
-	color: #ffffff;
+	color: var(--secondary-color);
 	border-radius: 50%;
 	top: 10px;
 	right: 0;
@@ -248,6 +272,7 @@ $themes: (
 			--bg-gradient-r: #{map-get($colors, bg-gradient-r)};
 			--bg-gradient-left: #{map-get($colors, bg-gradient-left)};
 			--bg-gradient-right: #{map-get($colors, bg-gradient-right)};
+			--bg-gradient-fade: #{map-get($colors, bg-gradient-fade)};
 			--text-color: #{map-get($colors, text-color)};
 			--placeholder-color: #{map-get($colors, placeholder-color)};
 			--font-family: #{map-get($colors, font-family)};

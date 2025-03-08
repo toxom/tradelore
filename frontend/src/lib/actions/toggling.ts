@@ -10,9 +10,9 @@ type OverlayState = {
 export const overlayStateAssets = writable<OverlayState>({
     wallet: { active: true, expanded: false },
     deposit: { active: true, expanded: false },
-    withdraw: { active: true, expanded: false },
-    earn: { active: true, expanded: false },
-    referral: { active: true, expanded: false },
+    trends: { active: true, expanded: false },
+    chart2: { active: true, expanded: false },
+    info: { active: true, expanded: false },
     feed: { active: true, expanded: false }
 });
 
@@ -20,7 +20,6 @@ export const overlayStateAssets = writable<OverlayState>({
 export const overlayStateTrade = writable<OverlayState>({
     pairs: { active: false, expanded: true },
     book: { active: false, expanded: true },
-    progress: { active: false, expanded: true },
     history: { active: false, expanded: true },
     order: { active: false, expanded: true },
     chart: { active: false, expanded: true }

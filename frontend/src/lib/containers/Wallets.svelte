@@ -6,7 +6,7 @@
         addNewWallet,
         wallets,
         selectedWallet,
-    } from 'clients/walletClient';
+    } from 'clients/balanceClient';
     import type { Token } from 'types/walletTypes';
     import TokenPanel from '../admin/TokenPanel.svelte'
     import PieChart from '$lib/containers/PieChart.svelte'
@@ -145,6 +145,7 @@
         width: auto;
         height: auto;
         margin-bottom: 1rem;
+        padding: 2rem;
 
     }
 
@@ -159,15 +160,15 @@
         & .value {
             font-size: 4rem;
         font-weight: 600;
-        color: #28a745; /* Green for positive values */
+        color: var(--text-color);
         }
         & .label {
             font-size: 2rem;
-            color: #666;
-        }
+            color: var(--text-color);
+          }
         & .conversion {
             font-size: 2rem;
-            color: #666;
+            color: var(--text-color);
             font-style: italic;
         }
     }

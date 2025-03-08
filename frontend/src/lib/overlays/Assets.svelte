@@ -20,6 +20,7 @@
     import Withdraw from "$lib/containers/Withdraw.svelte"
     import Ramp from "$lib/containers/Ramp.svelte"
     import Transfer from "$lib/containers/Transfer.svelte"
+    import TrendChart from "$lib/overlays/TrendChart.svelte"
 
 
     $: currentOverlayStateAssets = $overlayStateAssets;
@@ -27,14 +28,14 @@
     function getCustomTransition(name: string) {
         switch (name) {
             case 'wallet':
-                return { x:-200, y: 250, duration: 400, easing: cubicOut };
+                return { y: -250, duration: 400, easing: cubicOut };
             case 'deposit':
                 return { y: -250, duration: 400, easing: cubicOut };
-            case 'withdraw':
+            case 'trends':
                 return { x: 250, y: -250, duration: 400, easing: cubicOut };
-            case 'earn':
+            case 'chart2':
                 return { x: -250, duration: 400, easing: cubicOut };
-            case 'referral':
+            case 'info':
                 return { x: -250, duration: 400, easing: cubicOut };
             case 'feed':
                 return { x: 250, y: 250, duration: 400, easing: cubicOut };
@@ -54,16 +55,16 @@
         />
     {/if}
 
-    {#if ['deposit', 'withdraw', 'earn', 'referral'].includes(name)}
-        <!-- Container for deposit, withdraw, earn, and referral -->
+    {#if ['deposit', 'trends', 'chart2', 'info'].includes(name)}
+        <!-- Container for deposit, withdraw, chart2, and info -->
         <div class="financial-overlays-container">
             <div 
                 class="overlay {name}-overlay" 
                 class:expanded={state.expanded}
                 class:deposit-expanded={name === 'deposit' && state.expanded}
-                class:withdraw-expanded={name === 'withdraw' && state.expanded}
-                class:earn-expanded={name === 'earn' && state.expanded}
-                class:referral-expanded={name === 'referral' && state.expanded}
+                class:trends-expanded={name === 'trends' && state.expanded}
+                class:chart2-expanded={name === 'chart2' && state.expanded}
+                class:info-expanded={name === 'info' && state.expanded}
                 transition:fly={getCustomTransition(name)}
                 on:click={() => !state.expanded && toggleExpand(overlayStateAssets, name)}
                 use:drag={{
@@ -72,11 +73,11 @@
             >
                 {#if name === 'deposit'}
                     <Deposit />
-                {:else if name === 'withdraw'}
+                {:else if name === 'trends'}
                     <Withdraw />
-                {:else if name === 'earn'}
-                    <Ramp />
-                {:else if name === 'referral'}
+                {:else if name === 'chart2'}
+                    <TrendChart />
+                {:else if name === 'info'}
                     <Transfer />
                 {/if}
             </div>
@@ -113,111 +114,100 @@
     }   
 
     .overlay {
-        background-color: var(--primary-color);
+        backdrop-filter: blur(40px); 
+        -webkit-backdrop-filter: blur(10px); 
+        border-radius: 4rem;
+        background: var(--secondary-color);
+        box-shadow: -1px -1px 10px 1px var(--secondary-color);
+
     }
 
     .wallet-overlay {
-        width: auto;
-        height: 20rem;
+        width: calc(50% - 4rem);
+        height: 40rem;
         top: 4rem;
-        left: 25%;
-        right: 25%;
+        left: 0;
+        right: auto;
         bottom: auto;
-        border-radius: 2rem;
+        border-radius: 4rem;
         font-size: 2rem;
         overflow: hidden;
-        &.wallet-expanded {
-            width: auto;
-            height: auto;
-            top: 4rem;
-            left: 25%;
-            right: 25%;
-            bottom: 4rem;
-            overflow-x: hidden;
-            overflow-y: scroll;
-            scrollbar-width:2px;
-            scrollbar-color: var(--secondary-color) transparent;
-            scroll-behavior: smooth; 
-            font-size: 1rem;
-        }
+
     }
 
     .feed-overlay {
-        width: auto;
+        width: calc(35% - 4rem);
         height: auto;
-        top: 42rem;
-        left: 25%;
-        right: 25%;
+        top: 48rem;
+        left: 15%;
+        right: auto;
         bottom: 4rem;
-        border-radius: 2rem;
         font-size: 2rem;
         overflow: none;
-        &.feed-expanded {
-            height: auto;
-            width: auto;
-            top: 4rem;
-            left: 25%;
-            right: 25%;
-            bottom: 4rem;
-            overflow-x: hidden;
-            overflow-y: scroll;
-            scrollbar-width:2px;
-            scrollbar-color: var(--secondary-color) transparent;
-            scroll-behavior: smooth; 
-            font-size: 1rem;
-        }
+
     }
 
 
 
-    .deposit-overlay, .withdraw-overlay, .earn-overlay, .referral-overlay {
-        width: calc(12.5% - 4rem);
-        height: 10rem;
-        top: 28rem;
-        bottom: auto;
-        left: auto;
+    .info-overlay {
+        // width: calc(12.5% - 4rem);
+        height: calc(25% - 2rem);
+        width: calc(15% - 4rem);
+        top: auto;
+        bottom: 4rem;
+        left: 0;
         right: auto;
         font-size: 1.5rem;
         overflow: hidden;
-        border-radius: 2rem;
         flex: 1;
     }
 
     .deposit-overlay {
-        left: 25%;
+        top: 48rem;
+        height: calc(25% - 2rem);
+        width: calc(15% - 4rem);
+        left: 0;
         right: auto;
     }
 
-    .withdraw-overlay {
-        left: 37.5%;
-
-
-    }
-    .earn-overlay {
-        left: 50%;
-    }
-    .referral-overlay {
-        top: 28rem;
+    .trends-overlay {
+        left: auto;
         right: 0;
-        left: 62.5%;
-        bottom: 50%;
+        top: 48rem;
+        bottom: 4rem;
+        width: calc(50% - 4rem);
+        height: auto;
+
+
     }
+    .chart2-overlay {
+        right: 0;
+        width: calc(50% - 4rem);
+        height: 40rem;
+        top: 4rem;        
+        overflow: hidden;
+    }
+
 
     .deposit-overlay.deposit-expanded,
-.withdraw-overlay.withdraw-expanded,
-.earn-overlay.earn-expanded,
-.referral-overlay.referral-expanded {
-    height: auto;
+    .wallet-overlay.wallet-expanded,
+
+.trends-overlay.trends-expanded,
+.chart2-overlay.chart2-expanded,
+.feed-overlay.feed-expanded,
+
+.info-overlay.info-expanded {
     width: auto;
-    top: 28rem;
-    left: 25%;
-    right: 25%;
-    bottom: 4rem;
+    height: auto;
+    top: 4rem;
+    left: 4rem;
+    right: 4rem;
+    bottom: 8rem;
     overflow-x: hidden;
     overflow-y: scroll;
-    scrollbar-width: 2px;
+    scrollbar-width:2px;
     scrollbar-color: var(--secondary-color) transparent;
-    scroll-behavior: smooth;
+    scroll-behavior: smooth; 
     font-size: 1rem;
 }
 
@@ -234,7 +224,6 @@
     .metric .value {
         font-size: 1.75rem;
         font-weight: 600;
-        color: #28a745; /* Green for positive values */
     }
 
     .metric .label {
@@ -278,105 +267,14 @@
         color: #666;
     }
 
-    @media (max-width: 2400px) {
+        
+    @media (max-width: 1600px) {
         .wallet-overlay {
             width: auto;
-            height: auto;
+            height: calc(50% - 4rem);
             top: 4rem;
             left: 0;
-            right: 25%;
-            bottom: calc(75% + 1rem);
-            font-size: 2rem;
-            overflow: none;
-            &.wallet-expanded {
-                height: auto;
-                top: 4rem;
-                left:0;
-                right: 25%;
-                width: auto;
-                bottom: 8rem;
-                font-size: 1rem;
-            }
-        }
-        .feed-overlay {
-        width: auto;
-        height: auto;
-        top: calc(25% - 1rem);
-        left: 0;
-        right: 25%;
-        bottom: 4rem;
-        border-radius: 2rem;
-        font-size: 2rem;
-        overflow: none;
-        &.feed-expanded {
-            height: auto;
-            width: auto;
-            top: 4rem;
-            left: 0;
-            right: 25%;
-            bottom: 8rem;
-            font-size: 1rem;
-        }
-    }
-
-
-
-    .deposit-overlay, .withdraw-overlay, .earn-overlay, .referral-overlay {
-        width: calc(25% - 4rem);
-        height: auto;
-        top: auto;
-        bottom: auto;
-        left: auto;
-        right: 0;
-        font-size: 1.5rem;
-        overflow: none;
-        border-radius: 2rem;
-        flex: 1;
-    }
-
-    .deposit-overlay {
-        top: 4rem;
-        height: 30rem;
-    }
-
-    .withdraw-overlay {
-        top: 38rem;
-        height: 30rem;
-
-    }
-    .earn-overlay {
-        top: 72rem;
-        bottom: auto;
-        height: 14rem;
-
-    }
-    .referral-overlay {
-        top: auto;
-        bottom: 4rem;
-        height: 14rem;
-    }
-
-    .deposit-overlay.deposit-expanded,
-    .withdraw-overlay.withdraw-expanded,
-    .earn-overlay.earn-expanded,
-    .referral-overlay.referral-expanded {
-        height: auto;
-        width: auto;
-        top: 4rem;
-        left: 50%;
-        right: 0;
-        bottom: 4rem;
-        font-size: 1rem;
-    }
-
-    }
-    @media (max-width: 1000px) {
-        .wallet-overlay {
-            width: auto;
-            height: 20rem;
-            top: 4rem;
-            left: 0;
-            right: 0;
+            right: 50%;
             bottom: auto;
             font-size: 2rem;
             overflow: none;
@@ -391,15 +289,13 @@
             }
         }
         .feed-overlay {
-        width: auto;
-        height: auto;
-        top: 28rem;
-        left: 0;
-        right: 25%;
-        bottom: 4rem;
-        border-radius: 2rem;
-        font-size: 2rem;
-        overflow: none;
+            top: calc(25% + 4rem);
+        bottom: auto;
+        right: 0;
+            left: auto;
+        width: calc(50% - 4rem);
+        height: calc(25% - 4rem);
+        
         &.feed-expanded {
             height: auto;
             width: auto;
@@ -413,41 +309,49 @@
 
 
 
-    .deposit-overlay, .withdraw-overlay, .earn-overlay, .referral-overlay {
-        width: calc(25% - 3rem);
+    .deposit-overlay, .info-overlay {
+        width: calc(50% - 4rem);
         height: 16rem;
         top: auto;
         bottom: auto;
-        left: auto;
-        right: 0;
+        left: 0;
+        right: auto;
         font-size: 1.5rem;
         overflow: none;
-        border-radius: 2rem;
         flex: 1;
     }
 
     .deposit-overlay {
-        top: 28rem;
+        top: calc(50% + 4rem);
+        height: calc(25% - 8rem);
     }
 
-    .withdraw-overlay {
-        top: 48rem;
+    .trends-overlay {
+        top: calc(50% + 4rem);
+        right: 0;
+        left: 50%;
+        bottom: 4rem;
 
     }
-    .earn-overlay {
-        top: 68rem;
+    .chart2-overlay {
+        top: 4rem;
         bottom: auto;
+        width: calc(50% - 4rem);
+        height: calc(25% - 4rem);
+        right: 0;
 
     }
-    .referral-overlay {
+    .info-overlay {
         top: auto;
         bottom: 4rem;
+        height: calc(25% - 8rem);
+
     }
 
     .deposit-overlay.deposit-expanded,
-    .withdraw-overlay.withdraw-expanded,
-    .earn-overlay.earn-expanded,
-    .referral-overlay.referral-expanded {
+    .trends-overlay.trends-expanded,
+    .chart2-overlay.chart2-expanded,
+    .info-overlay.info-expanded {
         height: auto;
         width: auto;
         top: 28rem;
@@ -462,7 +366,7 @@
     @media (max-width: 768px) {
         .wallet-overlay {
             width: auto;
-            height: 19rem;
+            height: calc(25% - 8rem);
             top: 4rem;
             left: 0;
             right: 0;
@@ -479,17 +383,16 @@
                 font-size: 1rem;
             }
         }
-        .feed-overlay {
-        width: auto;
-        height: auto;
-        top: 27rem;
-        left: 0;
-        right: 0;
-        bottom: 10rem;
-        border-radius: 2rem;
-        font-size: 2rem;
+        .feed-overlay,  .trends-overlay {
+            width: calc(50% - 4rem);        
+            height: calc(30%);
+            left: auto;
+        right: auto;
+        top: auto;
+        bottom: 4rem;
+        font-size: 1rem;
         overflow: none;
-        &.feed-expanded {
+        &.feed-expanded, .trends-expanded {
             height: auto;
             width: auto;
             top: 12rem;
@@ -499,42 +402,55 @@
             font-size: 1rem;
         }
     }
+    .feed-overlay {
+        left: 0;
 
+    }
 
-
-    .deposit-overlay, .withdraw-overlay, .earn-overlay, .referral-overlay {
-        width: calc(25% - 4rem);
-        height: 2rem;
-        top: auto;
-        bottom: 4rem;
-        left: auto;
+    .trends-overlay {
         right: 0;
+
+    }
+
+    .deposit-overlay, .info-overlay {
+        width: calc(50% - 4rem);        
+        height: calc(12% - 2rem);
+        top: calc(25%);
+        bottom: auto;
+        left: auto;
+        right: auto;
         font-size: 1.5rem;
         overflow: none;
-        border-radius: 2rem;
         flex: 1;
+        
     }
 
     .deposit-overlay {
+        font-size: 1.5rem;
+        overflow: none;
+        flex: 1;
+    }
+
+
+    .chart2-overlay {
         left: 0;
-    }
-
-    .withdraw-overlay {
-        left: 25%;
-
-    }
-    .earn-overlay {
-        left: 50%;
-
-    }
-    .referral-overlay {
         right: 0;
+        top: auto;
+        bottom: calc(40% - 3rem);
+        height: 20%;
+        width: auto;
+
+
+    }
+    .info-overlay {
+       bottom: auto;
+       right: 0;
     }
 
     .deposit-overlay.deposit-expanded,
-    .withdraw-overlay.withdraw-expanded,
-    .earn-overlay.earn-expanded,
-    .referral-overlay.referral-expanded {
+    .trends-overlay.trends-expanded,
+    .chart2-overlay.chart2-expanded,
+    .info-overlay.info-expanded {
         height: auto;
         width: auto;
         top: 27rem;

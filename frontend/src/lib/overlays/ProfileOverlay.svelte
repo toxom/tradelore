@@ -2,9 +2,12 @@
     import { onMount } from 'svelte';
     import { get } from 'svelte/store';
     import { fade, slide } from 'svelte/transition';
-    
+    import { drag } from '$lib/actions/drag';
+    import { t } from 'stores/translation.store';
     import { pb } from '$lib/pocketbase';
-    import { Atom, BadgeCheck, Camera, Currency, Edit, Globe, History, LogOutIcon, Mail, MapPinned, SquareUserRound } from 'lucide-svelte';
+    import { Atom, BadgeCheck, Camera, Currency, Edit, Globe, History, LogOutIcon, Mail, MapPinned, SquareUserRound, UserCheck2Icon, X } from 'lucide-svelte';
+    import { UserRound, Settings, Lock, ShieldAlert } from 'lucide-svelte';
+
     import { currentUser } from '$lib/pocketbase';
     import { createEventDispatcher } from 'svelte';
     import type { User } from '../../types/accounts';
@@ -28,33 +31,61 @@
     import Security from '$lib/auth/Security.svelte';
     export let user: any;
     export let onClose: () => void;
-    let activeTab = 'ID'; 
+    import {
+        toggleAll,
+        allToggled,
+        overlayStateTrade,
+        toggleExpand,
+        handleBackdropClick,
+        handleMouseEnter,
+        handleMouseLeave,
+        isModalOpen,
+        closeModal,
+        modalPosition
+    } from "$lib/actions/toggling";
+    const dispatch = createEventDispatcher();
+    const tabIcons = [UserRound, Settings, Lock, ShieldAlert];
 
-
+    let activeTab = $t('nav.profileTabs.id');
     let isEditing = false;
     let editedUser = user ? { ...user } : {} as Partial<User>; 
-    const dispatch = createEventDispatcher();
+    let originalUser = { ...user };
+    let editingField: string | null = null;
+    let editingFields = { name: false, firstName: false, lastName: false };
 
-    function toggleEdit() {
-        isEditing = !isEditing;
+
+    function toggleEdit(field: keyof typeof editingFields) {
+        editingFields[field] = true;
     }
-
+    function cancelEdit() {
+        editedUser = { ...originalUser };
+        editingFields = { name: false, firstName: false, lastName: false };
+    }
     async function saveChanges() {
         try {
             if (user && user.id) {
                 await pb.collection('users').update(user.id, editedUser);
                 user = { ...editedUser };
-                isEditing = false;
+                originalUser = { ...editedUser }; // Update original values
             }
+            editingFields = { name: false, firstName: false, lastName: false };
         } catch (error) {
             console.error('Error updating user:', error);
         }
     }
-
-    function handleOutsideClick(event: MouseEvent) {
-        if (event.target === event.currentTarget) {
-            onClose();
+    function handleModalDragEnd(distance: number) {
+        console.log('Modal Drag Ended, Distance:', distance);
+        if (distance < -1000) {
+            console.log("Closing modal");
+            onClose(); 
         }
+    }
+    function handleOutsideClick(event: MouseEvent) {
+        if ((event.target as HTMLElement).closest('.modal-content')) {
+            return;
+        }
+        console.log('Clicked outside, closing modal');
+        onClose();
     }
 
     async function logout() {
@@ -73,26 +104,41 @@
 
 
 <div class="modal-overlay" on:click={handleOutsideClick} transition:fade={{ duration: 300 }}>
-    <div class="modal-content" on:click|stopPropagation>
-        <TabSelector
-        tabs={['ID', 'Preferences', 'Security', 'Admin']}
-        bind:activeTab
-        on:tabChange={(e) => { 
-            activeTab = e.detail.tab; 
-            console.log('Active tab:', activeTab); 
-        }}
-    />
+    <div class="modal-content" on:click|stopPropagation
+    use:drag={{ onDragEnd: handleModalDragEnd }}
+    >
     <div class="actions">
         <button class="logout-button" on:click={logout} transition:fade={{ duration: 300 }}>
-            <LogOutIcon size={24} />
-            <span>Logout</span>
+            <LogOutIcon />
+            <span>           
+                {$t('profile.logout')}          
+            </span>
         </button>
-        <button class="logout-button" on:click={onClose}>X</button>
+        <button class="close-button" on:click={onClose}>
+            <X />
+        </button>
     </div>
+    <div class="modal-header">
+        <TabSelector
+            tabs={[
+            $t('nav.profileTabs.id'),
+            $t('nav.profileTabs.preferences'),
+            $t('nav.profileTabs.security'),
+            $t('nav.profileTabs.admin')
+            ]}
+            tabIcons={tabIcons}
+            bind:activeTab
+            on:tabChange={(e) => { 
+            activeTab = e.detail.tab; 
+            console.log('Active tab:', activeTab); 
+            }}
+        />
+
+    </div>
+
     <!-- Tab content -->
     <div class="tab-content">
-        {#if activeTab === 'ID'}
-
+        {#if activeTab === $t('nav.profileTabs.id')}
         <div class="column-content">
             <div class="avatar-container">
                 {#if user.avatar}
@@ -102,107 +148,140 @@
     
                 {/if}
             </div>             
-             <div class="info-row">
-                <span class="id">
-                    {user.firstName}
-                </span>
-                <span class="id">
-                    {user.lastName}
-                </span>
-             </div>
-
-
             <div class="profile-info">
-                <div class="dropdown-section">
+                {#if editingFields.name || editingFields.firstName || editingFields.lastName}
+                <div class="edit-actions">
+                    <button on:click={saveChanges}> {$t('profile.save')}</button>
+                    <button on:click={cancelEdit}> {$t('profile.close')}</button>
+                </div>
+            {/if}
+                <div class="info-row2">
+                    <div class="info-row">
+                        <span class="label">{$t('forms.info.userName')}</span>
+                        {#if editingFields.name}
+                            <input bind:value={editedUser.name} />
+                        {:else}
+                            <span class="edit" on:click={() => toggleEdit('name')}>{user.name || 'Not set'}</span>
+                        {/if}
+                    </div>  
+                <div class="info-row">
                     <span class="label">
+                        <Mail/> {$t('forms.info.email')}
+                    </span>
+                    <span>{user.email}</span>
+                </div> 
+                </div>   
+                <div class="info-row2">
+                    <div class="info-row">
+                        <span class="label">{$t('forms.info.firstName')}</span>
+                        {#if editingFields.firstName}
+                            <input bind:value={editedUser.firstName} />
+                        {:else}
+                            <span class="edit" on:click={() => toggleEdit('firstName')}>{user.firstName || 'Not set'}</span>
+                        {/if}
+                    </div>
+
+                    <div class="info-row">
+                        <span class="label">{$t('forms.info.lastName')}</span>
+                        {#if editingFields.lastName}
+                            <input bind:value={editedUser.lastName} />
+                        {:else}
+                            <span class="edit" on:click={() => toggleEdit('lastName')}>{user.lastName || 'Not set'}</span>
+                        {/if}
+                    </div>
+
+            </div>   
+
+  
+
+
+
+
+        <div class="info-row2">
+
+            <div class="info-row">
+                <span class="label">
+                    <BadgeCheck/> {$t('forms.info.verified')}
+                </span>
+                <span>{user.verified ? $t('forms.info.verifiedYes') : $t('forms.info.verifiedNo')}</span>
+                    
+            </div>
+            <div class="info-row">
+                <span class="label">
+                    <UserCheck2Icon/> {$t('forms.info.role')}
+                </span>
+                <span>{user.role}</span>
+                    
+            </div>
+            </div>
+            <div class="info-row2">
+
+                <div class="info-row">
+
+                    <span class="label">
+                        {$t('forms.info.residence')}
+                    </span>                        
                         <Dropdown
                             options={countries}
                             selectedValue={get(currentCountry)} 
                             on:select={handleCountryChange}
                         />
-                    </span>                      
-                </div>   
-                <div class="info-row">
-                    
-                    {#if isEditing}
-                    <input bind:value={editedUser.name} />
+                </div>    
 
-                    <button on:click={saveChanges}>Save</button>
-                    <button on:click={toggleEdit}>Cancel</button>
-
-
-                    {:else}
+                    <div class="info-row">
 
                     <span class="label">
-                        <span class="label">{user.name || 'Not set'}</span>
-                        <SquareUserRound/>
+                        {$t('forms.info.timezone')}
                     </span>
-                    <button on:click={toggleEdit}><Edit/></button>
+                        <Dropdown
+                            options={timezones}
+                            selectedValue={get(currentTimezone)} 
+                            on:select={handleTimezoneChange}
+                        />
+                </div>    
+            </div>    
 
-                    {/if}
-                </div> 
+                    <div class="info-row">
 
-                <div class="info-row">
                     <span class="label">
-                        <span>{user.email}</span>
-                        <Mail/>
-                    </span>
-                </div>   
+                        {$t('forms.info.currency')}
+                    </span>                        
+                    <Dropdown
+                        options={currencies}
+                        selectedValue={get(currentCurrency)} 
+                        on:select={handleCurrencyChange}
+                    />
+    
+                </div>    
+                <div class="info-row2">
+                    <div class="info-row">
+                        <span class="label">
+                            <span> 
+                                <Atom/> {$t('forms.info.created')}
+                            </span>
+                        </span>
+                        {new Date(user.created).toLocaleString()}
+                    </div>
+                    <div class="info-row">
+                        <span class="label">
+                            <History/> {$t('forms.info.updated')}
+                        </span>
+                        <span>{new Date(user.updated).toLocaleString()}</span>
+                    </div>
+                </div>
 
-
-            <div class="info-row">
-                <span class="label">
-                    <span>{new Date(user.created).toLocaleString()}</span>
-                    <Atom/>
-                </span>
-            </div>
-            <div class="info-row">
-                <span class="label">
-                    <span>{new Date(user.updated).toLocaleString()}</span>
-                    <History/>
-                </span>
-            </div>
-            <div class="info-row">
-                <span class="label">
-                    <span>{user.verified ? 'Yes' : 'No'}</span>
-                    <BadgeCheck/>
-                </span>                    
-            </div>
 
 
             </div>  
         </div>
 
-        {:else if activeTab === 'Preferences'}
+        {:else if activeTab === $t('nav.profileTabs.preferences')}
         <div class="column-content">
-            <div class="dropdown-section">
-                <span>Timezone</span>
-
-                <span class="label">
-                    <Dropdown
-                        options={timezones}
-                        selectedValue={get(currentTimezone)} 
-                        on:select={handleTimezoneChange}
-                    />
-                </span>     
-                <span>Base Currency</span>
-                <span class="label">
-
-                <Dropdown
-                    options={currencies}
-                    selectedValue={get(currentCurrency)} 
-                    on:select={handleCurrencyChange}
-                />
-            </span>     
-
-            </div>                 
+             
             </div>   
-            <div class="dropdown-section">
-
-        </div>
-        {:else if activeTab === 'Security'}
+        {:else if activeTab === $t('nav.profileTabs.security')}
         <Security/>
-        {:else if activeTab === 'Admin'}
+        {:else if activeTab === $t('nav.profileTabs.admin')}
         <WalletForm />
 
         <TokenPanel />
@@ -273,8 +352,18 @@
         /* gap: 20px; */
         /* height: 50px; */
         /* padding: 10px 20px; */
+        transition: all 0.3s ease;
 
 
+    }
+
+    .modal-header {
+        display: flex;
+        flex-direction: row;
+        height: auto;
+        position: sticky;
+        transition: all 0.3s ease;
+        margin-bottom: 1rem;
     }
 
     .modal-content {
@@ -300,22 +389,23 @@
             rgba(70, 118, 114, 0.05) 85%,
             rgba(70, 118, 114, 0) 100%
             ); */
-        backdrop-filter: blur(40px);        
+        backdrop-filter: blur(40px);
+        border-bottom-left-radius: 4rem; 
+        border-bottom-right-radius: 4rem;       
+        border-bottom: 1px solid var(--tertiary-color);
         padding: 0;
         display: flex;
         flex-direction: column;
-        border: 1px solid rgb(53, 53, 53);
-        top: 0;
-        margin-left: 0;
-        bottom: auto;
+        position: fixed;
+        top: 4rem;
         width: 100%;
-        height: 93vh;
+        height: 90vh;
         overflow-y: scroll;
     scrollbar-width:2px;
     scrollbar-color: var(--secondary-color) transparent;
     scroll-behavior: smooth; 
+    transition: all 0.3s ease;
         /* height: 100vh; */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
 
     .tab-content {
@@ -323,6 +413,8 @@
         overflow-y: auto;
         height: auto;
         width: 100%;
+        transition: all 0.3s ease;
+
     }
 
     .column-content {
@@ -331,10 +423,17 @@
         align-items: center;
         justify-content: center;
         height: auto;
-        width: 100%;
+        width: 100%
+        
     }
 
-
+    input {
+        padding: 1rem 0.5rem;
+        border: 1px solid transparent;
+        border-bottom: 1px solid var(--text-color);
+        background: transparent;
+        font-size: 1rem;
+    }
     .profile-header {
         display: flex;
         align-items: top;
@@ -354,7 +453,13 @@
         overflow: hidden;
         margin-right: 1rem;
     }
-
+    .edit-actions {
+        margin-top: 10px;
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        gap: 1rem;
+    }    
     .avatar {
         width: 100%;
         height: 100%;
@@ -400,9 +505,9 @@
 
     .info-row {
         display: flex;
-        flex-direction: row;
+        flex-direction: column;
         justify-content: center;
-        align-items: center;
+        align-items: flex-start;
         position: relative;
         margin: 0;
         left: 0;
@@ -410,36 +515,83 @@
         margin-top: 1rem;
         width: 100%;
         flex-grow: 1;
-        gap: 1rem;
+        gap: 0;
         margin-bottom: 0.5rem;
         // padding: 1rem;
         color: var(--text-color);
         font-size: 1.5rem;
+        font-weight: bold;
+        letter-spacing: 0.1rem;
+
+        // & .id {
+        // }
+
+        span.label {
+            width: 100%;
+            flex-direction: row;
+            justify-content: left;
+            font-size: 1.2rem;
+            font-weight: 300;
+            padding-left: 0;
+
+        }
+
+        & span.edit {
+            transition: all 0.3s ease;
+            &:hover {
+                background: var(--tertiary-color);
+                color: var(--primary-color);
+                cursor: pointer;
+                letter-spacing: 0.4rem;
+            }
+        }
+    }
+    .info-row2 {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: flex-start;
+        position: relative;
+        margin: 0;
+        left: 0;
+        right: 0;
+        margin-top: 1rem;
+        width: 100%;
+        flex-grow: 1;
+        gap: 2rem;
+        margin-bottom: 0.5rem;
+        // padding: 1rem;
+        color: var(--text-color);
+        font-size: 1.5rem;
+        font-weight: bold;
 
         // & .id {
         // }
 
         & .label {
             width: 100%;
-            flex-direction: row-reverse;
+            flex-direction: row;
             justify-content: left;
+            font-size: 1.2rem;
+            font-weight: 300;
+
+
         }
     }
 
     .label {
-        font-weight: bold;
         width: auto;
     }
 
     .actions {
         display: flex;
-        justify-content: flex-end;
+        justify-content: right;
+        align-items: right;
         position: absolute;
         top: 0;
-        right: 0;
+        right: 1rem;
         margin-right: 0;
         gap: 0.5rem;
-        background-color: var(--bg-color);
     }
 
     button {
@@ -448,27 +600,22 @@
         border-radius: 4px;
         cursor: pointer;
         font-size: 1rem;
-        transition: background-color 0.3s;
+        transition: all 0.3s ease;
     }
 
     button:hover {
         opacity: 0.8;
     }
 
-   button.logout-button {
-        display: flex;
-        gap: 10px;
-        // position: absolute;
-        right: 20px;
-        top: 20px;
-        background: var(--tertiary-color);
-        width: auto;
-    }
+
 
     span {
         display: flex;
         gap: 1rem;
+        padding-left: 1rem;
         color: var(--text-color);
+        transition: all 0.3s ease;
+
         &.id {
             font-size: 2.5rem;
             display: flex;
@@ -483,7 +630,24 @@
 
     @media (max-width: 1000px) {
         .modal-content {
-            width: 90%;
+        }
+        .modal-header {
+            display: flex;
+            flex-direction: row;
+            height: auto;
+            margin-top: 0;
+        }
+
+        .actions {
+            top: 0;
+            right: 0;
+            justify-content: space-between;
+            width: calc(100% - 2rem);
+            gap: 2rem
+        }
+
+        .info-row2 {
+            flex-direction: column;
         }
 
     }

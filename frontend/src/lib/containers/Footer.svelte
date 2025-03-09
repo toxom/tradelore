@@ -210,22 +210,7 @@
     }
 
     @media (max-width: 1600px) {
-      .footer {
-        padding:  0;
-        background:var(--bg-gradient);
-        text-align: center;
-        position: fixed;
-        bottom: 0;
-        right: 0;
-        left: auto;
-        transition: height 0.3s ease;
-        overflow: hidden;
-        border-top-left-radius: 2rem;
-        border-top-right-radius: 0;
-        border-top: 1px solid;
-        border-color: var(--bg-color);
-        max-width: 200px;
-      }
+
       .footer-grid {
         flex-direction: column;
         gap: 0;
@@ -240,8 +225,8 @@
 
 
     @media (max-width: 768px) {
-      .footer {
-        display: none;
-      }
+      // .footer {
+      //   display: none;
+      // }
     }
     </style>

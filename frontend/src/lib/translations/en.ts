@@ -2,6 +2,7 @@ import { Moon, Sun, Sunset, Sunrise, Focus, Bold, Gauge } from 'lucide-svelte';
 
 export default {
 	nav: {
+		title: 'Magellan',
 		ask: 'Ask',
 		build: 'Build',
 		notes: 'Notes',
@@ -16,6 +17,54 @@ export default {
 		signup: 'Sign Up',
 		wallet: 'Wallet',
 		trade: 'Trade',
+		profileTabs: {
+			id: 'Info',
+			preferences: 'Preferences',
+			security: 'Security',
+			admin: 'Admin'
+		},
+	},
+	forms: {
+		info: {
+			residence: 'Residence',
+			timezone: 'Timezone',
+			currency: 'Default Currency',
+			userName: 'User Name',
+			firstName: 'First Name',
+			lastName: 'Last Name',
+			email: 'Email',
+			created: 'Created',
+			updated: 'Updated',
+			verified: 'Verified',
+			verifiedYes: 'Yes',
+			verifiedNo: 'No',
+			role: 'No',
+		},
+		twoF: {
+			title: 'Two-Factor Authentication Setup',
+			warning: 'Please log in to access 2FA settings.',
+			setup: 'Set Up Two-Factor Authentication',
+			alertEnabled: '2FA enabled! Use the QR code in your authenticator app.',
+			alertFailed: 'Failed to enable 2FA,',
+			alertVerify: '2FA is not set up.',
+			alertVerifySuccess: 'ode verified successfully!',
+			alertVerifyFailed: 'Invalid 2FA code. Try again.',
+			alertVerifyError: 'Error verifying code. Please try again.',
+			firstAction: 'Generate QR code',
+			firstActionLoad: 'Generating...',
+			prompt: 'Scan this QR code with your authenticator app (like Google Authenticator)',
+			key: 'Secret key (if needed):',
+			placeholder: 'Enter the code from your authenticator app',
+			secondAction: 'Enable 2FA',
+			verify: 'Verify 2FA Code',
+		},
+		password: {
+			setup: 'Enter 2FA Code to Reset Password',
+			prompt: 'Please enter the current code from your authenticator app to verify your identity:',
+			placeholder: 'Enter 2FA Code to Reset Password',
+			firstAction: 'Request Password Reset',
+			verify: 'Verify 2FA and Reset Password',
+		}
 	},
 	lang: {
 		notification: 'Language: English',

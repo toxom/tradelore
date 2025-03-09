@@ -1,19 +1,19 @@
 <script lang="ts">
     import { onMount, createEventDispatcher, tick } from 'svelte';
-    import { pb } from '$lib/pocketbase';
+    import { pb, currentUser } from '$lib/pocketbase';
     import { fly, fade, slide } from 'svelte/transition';
-    import { X, Calculator, Camera, Bell, MapPin, CircleX, LogIn, User, LogOut, MessageCircle, Filter, FilterX, Compass } from 'lucide-svelte';
+    import { X, Calculator, Camera, Bell, MapPin, CircleX, LogIn, User, LogOut, MessageCircle, Filter, FilterX, Compass, ArrowBigUp, ArrowUp } from 'lucide-svelte';
 	import { Moon, Sun, Sunset, Sunrise, Focus, Bold, Gauge, Key, Bone } from 'lucide-svelte';
     import { Wallet, Landmark, CreditCard, BarChart, PieChart } from 'lucide-svelte';
     import Notifications from '$lib/overlays/NotificationsOverlay.svelte';
     import Profile from '$lib/overlays/ProfileOverlay.svelte';
-    import { currentUser } from '$lib/pocketbase';
     import Auth from '$lib/overlays/Auth.svelte'
 	import Landing from '$lib/overlays/Landing.svelte'
 	import { t } from '../stores/translation.store';
 	import { currentLanguage, languages } from '../stores/preferences.store';
 	import { currentTheme } from '../stores/theme.store';
     import { goto } from '$app/navigation';
+    import { drag } from '$lib/actions/drag';
 	import Language from '@tabler/icons-svelte/icons/language';
 	import Dropdown from '$lib/containers/Dropdown.svelte';
 	import Footer from '$lib/containers/Footer.svelte';
@@ -51,6 +51,7 @@
 
     let showAuth = false;
     let showProfile = false;
+    let dragDistance = 0; 
 
 	const dispatch = createEventDispatcher();
 	const styles = [
@@ -148,32 +149,44 @@
         toggleOverlay('styles'); 
 	}
 
-
-
+    function handleModalDragStart(distance: number) {
+        console.log('Modal Drag Started, Distance:', distance);
+        if (distance > 10) { 
+            console.log("Opening modal");
+            toggleAuthOrProfile(); 
+        }
+    }
+    function handleDragStart(event: CustomEvent) {
+        dragDistance = event.detail.distance; 
+    }
 </script>
 
 
 <div class="container" on:click={handleOutsideClick}>
 
-	<header>
+	<header >
 		<span class='logo'>
 			<Compass size={40} />
 			<h1>
-				Magellan
-			</h1>
+                {$t('nav.title')}
+            </h1>
 		</span>
 		<div class="nav-links" transition:fly={{ y: 50, duration: 300 }}>
-            <!-- <ToggleAllButton type="assets" text= {$t('nav.wallet')} icon={Wallet} /> -->
-            <ToggleAllButton type="trade" text= {$t('nav.trade')} icon={BarChart} />
+            {#if $currentUser}
+                <!-- <ToggleAllButton type="assets" text= {$t('nav.wallet')} icon={Wallet} /> -->
+                <ToggleAllButton type="trade" text= {$t('nav.trade')} icon={BarChart} />
+                <button 
+                    class="nav-link" 
+                    class:active={overlayState.notifications} 
+                    data-overlay="notifications"
+                    on:click|stopPropagation={() => toggleOverlay('notifications')}
+                >
+                    <Bell size={20} />
+                </button>
 
-			<button 
-			class="nav-link" 
-			class:active={overlayState.notifications} 
-			data-overlay="notifications"
-			on:click|stopPropagation={() => toggleOverlay('notifications')}
-			>
-				<Bell size={20} />
-			</button>
+                {:else}
+				{/if}
+
 			<StyleSwitcher />
 			<Dropdown
 				options={languages}
@@ -217,7 +230,7 @@
 	<div class="auth-overlay" on:click={handleOverlayClick}  transition:fly={{ y: -200, duration: 300}} >
 		<div class="auth-content" transition:fly={{y: 200, duration: 300}}>
 			<button class="close-button" transition:fly={{ y: -200, duration: 300}} on:click={() => showAuth = false}>
-				<X size={24} />
+				<ArrowUp />
 			</button>
 			<Auth on:success={handleAuthSuccess} />
 		</div>
@@ -261,7 +274,11 @@
         </button>
     </div>
     {/if}
-	<Footer/>
+    {#if $currentUser}
+    {:else}
+    <Footer/>
+
+    {/if}
   </div>
   {#if showStyles}
   <div
@@ -335,10 +352,17 @@
 
     .auth-content {
         position: fixed;
-		top: 7rem;
+        background: transparent;
+        display: flex;
+        flex-direction: column;
+		top: 33%;
+        bottom: 33%;
         width: 100%;
         height: auto;
         overflow-y: auto;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 1rem;
     }
 header {
     display: flex;
@@ -488,17 +512,7 @@ header {
 		align-items: center;
 		color: var(--text-color);
 	}
-    .close-button {
-        position: absolute;
-        color: red;
-        border-radius: 50%;
-        top: 10px;
-        right: 10px;
-        background-color: transparent;
-        border: none;
-        font-size: 1.5rem;
-        cursor: pointer;
-    }
+
     .user-name {
         overflow: hidden;
         text-overflow: ellipsis;

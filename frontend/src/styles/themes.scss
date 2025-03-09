@@ -102,6 +102,11 @@ $themes: (
 	cursor: pointer;
 	user-select: none;
 
+	&:hover {
+		box-shadow: -50px -1px 50px 4px rgba(255, 255, 255, 0.2);
+
+	}
+
 	h2 {
 		font-weight: 700;
 		width: calc(100% - 1rem);
@@ -119,6 +124,10 @@ $themes: (
 	cursor: default;
 	box-shadow: -100px -1px 100px 4px rgba(255, 255, 255, 0.2);
 	border: 3px solid transparent;
+
+	&:hover {
+		transform: none;
+	}
 
 }
 
@@ -156,6 +165,55 @@ $themes: (
 	align-items: center;
 	z-index: 3000;
 }
+
+.close-button, .logout-button {
+	position: relative;
+	color: var(--text-color);
+	background-color: var(--bg-color);
+	box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin-top: 1rem;
+	width: 3rem;
+	height: 3rem;
+	border-radius: 50%;
+	font-size: 1.5rem;
+	cursor: pointer;
+	transition: all 0.3s ease;
+	span {
+		display: none;
+
+	}
+	&:hover {
+		span {
+			display: inline;
+			color: var(--primary-color);
+
+		}
+	}
+
+	&:hover {
+		transform: scale(1.1);
+		background: red;
+		color: var(--primary-color);
+	}
+}
+
+.logout-button {
+	span {
+		color: var(--primary-color);
+	}
+	&:hover {
+		transform: none;
+		width: auto;
+		border-radius: 4rem;
+		color: var(--primary-color);
+
+
+	}
+}
+
 
 .toggle-button {
 	display: flex;
@@ -228,7 +286,7 @@ $themes: (
 	max-width: 200px;
 }
 
-.close-button, .expand-button {
+.expand-button {
 	display: none;
 	position: absolute;
 	color: var(--secondary-color);
@@ -245,13 +303,6 @@ $themes: (
 
 }
 
-.close-button {
-	right: 10px;
-
-	&:hover {
-		color: red;
-	}
-}
 
 .expand-button {
 	right: 10px;

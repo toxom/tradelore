@@ -3,7 +3,8 @@
     import { verifyTOTP, generateTOTPSecret, generateQRCode } from '$lib/auth/totp';
     import { pb, currentUser } from '$lib/pocketbase';
     import { get } from 'svelte/store';
-  
+    import { t } from '../../stores/translation.store';
+
     let username = ''; // Will be populated from the current auth
     let token = ''; // TOTP code entered by the user
     let qrCode = ''; // QR code for 2FA setup
@@ -94,21 +95,18 @@
         
         console.log('Updated user:', updatedUser);
         
-        // Update the store properly
         currentUser.set(updatedUser);
         
-        // Update local reference
         userObject = updatedUser;
         
         is2FAEnabled = true;
-        alert('2FA enabled! Use the QR code in your authenticator app.');
+        alert($t('forms.twoF.alertEnabled'));
       } catch (error) {
         console.error('Error enabling 2FA:', error);
-        alert('Failed to enable 2FA: ' + (error.message || 'Unknown error'));
+        alert($t('forms.twoF.alertFailed') + (error.message || 'Unknown error'));
       }
     }
   
-    // Verify 2FA code before performing any action (like password reset)
     async function verifyCode() {
       twoFAError = '';
       try {
@@ -117,7 +115,7 @@
         console.log('TOTP secret for verification:', currentUserValue?.totpSecret);
         
         if (!currentUserValue?.totpSecret) {
-          alert('2FA is not set up.');
+          alert($t('forms.twoF.alertVerify'));
           return;
         }
   
@@ -130,14 +128,14 @@
             // Trigger password reset logic here
             await requestPasswordReset();
           } else {
-            alert('Code verified successfully!');
+            alert($t('forms.twoF.alertVerifySuccess'));
           }
         } else {
-          twoFAError = 'Invalid 2FA code. Try again.';
+          twoFAError = $t('forms.twoF.alertVerifyFailed');
         }
       } catch (error) {
         console.error('Error verifying code:', error);
-        twoFAError = 'Error verifying code. Please try again.';
+        twoFAError = $t('forms.twoF.alertVerifyError');
       }
     }
   
@@ -163,26 +161,38 @@
   
   
   <div class="container">
-    <h2>Two-Factor Authentication Setup</h2>
+    <h2>
+      {$t('forms.twoF.title')}
+    </h2>
   
     {#if !pb.authStore.isValid}
       <div class="auth-warning">
-        <p>Please log in to access 2FA settings.</p>
+        <p>      
+          {$t('forms.twoF.warning')}
+        </p>
       </div>
     {:else}
       {#if !is2FAEnabled}
         <div class="setup-container">
-          <h3>Set Up Two-Factor Authentication</h3>
+          <h3>
+            {$t('forms.twoF.setup')}
+          </h3>
           {#if qrCode}
             <div class="qr-container">
               <img src={qrCode} alt="Scan this QR code in your authenticator app">
-              <p>Scan this QR code with your authenticator app (like Google Authenticator)</p>
-              <p>Secret key (if needed): <code>{secret}</code></p>
-              <button on:click={enable2FA}>Enable 2FA</button>
+              <p>            
+                {$t('forms.twoF.prompt')}
+              </p>
+              <p>            
+                {$t('forms.twoF.key')}
+                <code>{secret}</code></p>
+              <button on:click={enable2FA}>
+                {$t('forms.twoF.secondAction')}
+              </button>
             </div>
           {:else}
             <button on:click={generateQRCodeForUser} disabled={isGeneratingQR}>
-              {isGeneratingQR ? 'Generating...' : 'Generate QR Code'}
+              {isGeneratingQR ? $t('forms.twoF.firstActionLoad') : $t('forms.twoF.firstAction')}
             </button>
           {/if}
         </div>
@@ -190,11 +200,11 @@
   
       {#if is2FAEnabled}
         <div class="verify-container">
-          <h3>Verify 2FA Code</h3>
+          {$t('forms.twoF.verify')}
           <input 
             type="text" 
             bind:value={token} 
-            placeholder="Enter the code from your authenticator app" 
+            placeholder={$t('forms.twoF.placeholder')}
             maxlength="6"
             pattern="[0-9]*"
             inputmode="numeric"
@@ -202,29 +212,39 @@
           {#if twoFAError}
             <p class="error">{twoFAError}</p>
           {/if}
-          <button on:click={verifyCode}>Verify 2FA</button>
+          <button on:click={verifyCode}>
+            {$t('forms.twoF.verify')}
+          </button>
         </div>
       {/if}
   
       {#if !isPasswordResetRequested && is2FAEnabled}
         <div class="reset-container">
-          <button on:click={() => isPasswordResetRequested = true}>Request Password Reset</button>
+          <button on:click={() => isPasswordResetRequested = true}>
+            {$t('forms.password.firstAction')}
+          </button>
         </div>
       {/if}
   
       {#if isPasswordResetRequested && is2FAEnabled}
         <div class="reset-container">
-          <h3>Enter 2FA Code to Reset Password</h3>
-          <p>Please enter the current code from your authenticator app to verify your identity:</p>
+          <h3>          
+            {$t('forms.password.placeholder')}
+          </h3>
+          <p>
+            {$t('forms.password.prompt')}
+          </p>
           <input 
             type="text" 
             bind:value={token} 
-            placeholder="Enter the code from your authenticator app" 
+            placeholder= {$t('forms.password.placeholder')}
             maxlength="6"
             pattern="[0-9]*"
             inputmode="numeric"
           />
-          <button on:click={verifyCode}>Verify 2FA and Reset Password</button>
+          <button on:click={verifyCode}>
+            {$t('forms.password.verify')}
+          </button>
         </div>
       {/if}
     {/if}
@@ -253,7 +273,7 @@
     }
     
     .qr-container img {
-      max-width: 200px;
+      max-width: 300px;
       margin-bottom: 15px;
     }
     

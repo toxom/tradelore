@@ -26,10 +26,9 @@
         {#if icon}
           <svelte:component this={icon} size={16}/>
         {/if}
-
-          <h3>{selectedLabel}</h3>
-          
+          {selectedLabel}
           {selectedName}
+          
         ▼
       </button>
     </span>
@@ -58,25 +57,34 @@
       }     
           
       .dropdown {
+        display: flex;
+        flex: 1;
+        width: auto;
         position: relative;
     }
     .dropdown-btn {
       display: flex;
       flex-direction: row;
       align-items: center;
-      justify-content: center;
+      justify-content: space-between;
       gap: 1rem;
-      // padding: 0.5rem;
+      padding: 0.5rem;
       font-size: 1rem;
+      flex: 1;
       border: 1px solid;
       border-color: var(--secondary-color);
       border-radius: 1rem;
-      background: var(--primary-color);
       cursor: pointer;
-      width: auto;
+      width: max-content;
+      transition: all 0.3s ease;
+
         color: var(--text-color);
       &.active {
-        background: var(--secondary-color);
+        background: var(--bg-color);
+      }
+      h3 {
+        color: var(--text-color);
+        width: auto;
       }
 
     span {

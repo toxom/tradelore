@@ -20,7 +20,7 @@ export interface User {
   tradingExperience?: string;
   riskTolerance?: string;
   notificationPreferences?: Record<string, boolean>;
-  role?: string;
+  role: string;
 }
 
 

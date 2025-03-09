@@ -97,6 +97,11 @@
 </div>
 
 <style lang="scss">
+    @use "src/styles/themes.scss" as *;
+    * {
+        font-family: var(--font-family);
+    }     
+    
     .landing-container {
         margin-top: 4rem;
         display: flex;
@@ -118,6 +123,7 @@
         scroll-behavior: smooth;
 		scrollbar-width: thick;
 		scrollbar-color: gray transparent;
+        background: var(--bg-gradient-fade);
     }
 
     .section {
@@ -183,7 +189,7 @@
                 height: 100%;
                 margin-left: 1rem;
                 text-align: left;
-                background: var(--accent1);
+                background: var(--text-color);
                 background-clip: text;
                 -webkit-background-clip: text;
                 color: transparent;

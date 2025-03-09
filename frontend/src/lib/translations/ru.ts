@@ -2,6 +2,7 @@ import { Moon, Sun, Sunset, Sunrise, Focus, Bold, Gauge } from 'lucide-svelte';
 
 export default {
 	nav: {
+		title: 'Магеллан',
 		ask: 'Спросить',
 		build: 'Создать',
 		notes: 'Заметки',
@@ -16,6 +17,54 @@ export default {
 		signup: 'Зарегистрироваться',
 		wallet: 'Кошелек',
 		trade: 'Рынки',
+		profileTabs: {
+			id: 'Информация',
+			preferences: 'Настройки',
+			security: 'Безопасность',
+			admin: 'Администратор'
+		}
+	},
+	forms: {
+		info: {
+			residence: 'Место жительства',
+			timezone: 'Часовой пояс',
+			currency: 'Валюта по умолчанию',
+			userName: 'Имя пользователя',
+			firstName: 'Имя',
+			lastName: 'Фамилия',
+			email: 'Электронная почта',
+			created: 'Создано',
+			updated: 'Обновлено',
+			verified: 'Проверено',
+			verifiedYes: 'Да',
+			verifiedNo: 'Нет',
+			role: 'Роль',
+		},
+		twoF: {
+			title: 'Настройка двухфакторной аутентификации',
+			warning: 'Пожалуйста, войдите в систему, чтобы получить доступ к настройкам 2FA.',
+			setup: "Настроить двухфакторную аутентификацию",
+			alertEnabled: "2FA включена! Используйте QR-код в приложении-аутентификаторе",
+			alertFailed: 'Не удалось включить 2FA.',
+			alertVerify: '2FA не настроена.',
+			alertVerifySuccess: 'Код успешно подтвержден!',
+			alertVerifyFailed: 'Неверный код 2FA. Попробуйте еще раз.',
+			alertVerifyError: 'Ошибка проверки кода. Пожалуйста, попробуйте еще раз.',
+			firstAction: "Сгенерировать QR-код",
+			firstActionLoad: "Генерация...",
+			prompt: "Отсканируйте этот QR-код с помощью приложения аутентификатора (например, Google Authenticator)",
+			key: "Секретный ключ (если необходимо):",
+			placeholder: "Введите код из приложения аутентификатора",
+			secondAction: "Включить 2FA",
+			verify: "Проверить код 2FA"
+		  },
+		  password: {
+			setup: "Введите код 2FA для сброса пароля",
+			prompt: "Пожалуйста, введите текущий код из вашего приложения аутентификатора для подтверждения вашей личности:",
+			placeholder: "Введите код 2FA для сброса пароля",
+			firstAction: "Запросить сброс пароля",
+			verify: "Проверить 2FA и сбросить пароль"
+		  }
 	},
 	lang: {
 		notification: 'Язык: русский',

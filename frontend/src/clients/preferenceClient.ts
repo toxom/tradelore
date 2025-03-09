@@ -17,25 +17,10 @@ let selectedCountryName = '';
 let selectedCurrencyName = '';
 let selectedTimezoneName = '';
 
-export async function handleCountryChange() {
-    showCountryNotification = true;
-
-    const current = get(currentCountry);
-    const currentIndex = countries.findIndex((c) => c.code === current);
-    const nextIndex = (currentIndex + 1) % countries.length;
-    const nextCountry = countries[nextIndex];
-
-    await currentCountry.set(nextCountry.code); // Use the store's `set` method
-    selectedCountryName = nextCountry.name;
-
+export async function handleCountryChange(event: CustomEvent<{ code: string }>) {
+    const selectedCode = event.detail.code;
+    await currentCountry.set(selectedCode);
     await tick();
-
-    setTimeout(() => {
-        showCountryNotification = true;
-    }, 0);
-    setTimeout(() => {
-        showCountryNotification = false;
-    }, 600);
 }
 
 export async function handleCurrencyChange() {

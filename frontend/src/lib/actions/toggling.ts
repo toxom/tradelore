@@ -7,6 +7,14 @@ type OverlayState = {
     };
 };
 
+export const isModalOpen = writable<boolean>(false);
+
+export const modalPosition = writable({ x: 0, y: 0 });
+
+export function closeModal() {
+    isModalOpen.set(false);
+}
+
 export const overlayStateAssets = writable<OverlayState>({
     wallet: { active: true, expanded: false },
     deposit: { active: true, expanded: false },

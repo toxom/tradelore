@@ -82,7 +82,7 @@
     });
 </script>
 
-<div class="auth-container">+
+<div class="auth-container">
     {#if $currentUser}
         <div class="user-info">
             <div class="avatar-container">
@@ -111,7 +111,6 @@
                     bind:value={email}
                     placeholder="Email"
                     required
-                    style="background-color: #444444;"
 
                 />
                 <input
@@ -122,24 +121,25 @@
                     required
                 />
                 <div class="button-group">
-                    <button class="button button-signup" on:click={signUp}>
-                        <UserPlus size={16} />
-                        <span>Sign Up</span>
+                    <button class="auth" on:click={signUp}>
+                        <span>
+                            <UserPlus />
+                            Sign Up</span>
                     </button>
-                    <button class="button button-login" on:click={login}>
-                        <LogIn size={16} />
-                        <span>Login</span>
+                    <button class="auth" on:click={login}>
+                        <span>
+                            <LogIn />
+                            Login
+                        </span>
                     </button>
                 </div>
             </form>
-            <div class="terms">
-                <p>
-                    By using our service you agree:
-                </p>
+            <span class="terms">
+                    By using our service you agree
                 <p>Privacy Policy</p>
-                <p>&</p>
+                &
                 <p>Terms of Use</p>
-            </div>
+            </span>
 
         </div>
 
@@ -159,12 +159,18 @@
 {/if}
 
 <style lang="scss">
+    @use "src/styles/themes.scss" as *;
+    
+    * {
+        font-family: var(--font-family);
+        color: var(--text-color);
+    }      
     .auth-container {
         display: flex;
-        color: #ffffff;
+        color: var(--text-color);
 
         /* border-radius: 20px; */
-
+        
         justify-content: center;
         align-items: center;
         gap: 20px;
@@ -182,15 +188,24 @@
     .login-container {
         display: flex;
         flex-direction: column;
+        justify-content: center;
+        width: auto;
+        flex: 1;
+        max-width: 800px;
     }
 
-    .terms {
+    span.terms {
         display: flex;
         flex-direction: row;
-        gap: 10px;
+        gap: 0.5rem;
         justify-content: center;
-        color: gray;
-        height: 40px;
+        align-items: center;
+        color: var(--text-color);
+        height: auto;
+        p {
+            color: var(--text-color);
+            font-weight: 800;
+        }
     }
     .user-info {
         display: flex;
@@ -225,90 +240,41 @@
 
     .auth-form {
         display: flex;
-        flex-direction: row;
+        flex-direction: column;
         justify-content: center;
         align-items: center;
         /* height: 100px; */
-        gap: 3px;
+        gap: 1rem;
+        max-width: 1000px;
 
     }
 
 
     .auth-form input {
-        background-color: #3f9fff; /* Blue background color */
-        color: #ffffff; /* White text color */
-        /* height: 20px; Consistent height */
-        padding: 10px; /* Padding for text */
-        border-radius: 5px; /* Rounded corners */
-        border: 1px solid #34495e; /* Subtle border */
-        font-size: 16px; /* Readable font size */
-        /* width: 90%; Full width of container */
-        /* margin-left: 5%; */
-        transition: border-color 0.3s, box-shadow 0.3s; /* Smooth transition for focus effect */
+        background-color: var(--secondary-color);
+        color: var(--text-color); 
+        padding: 1rem;
+        border-radius: 5px; 
+        border: 1px solid var(--secondary-color); 
+        border-radius: 2rem;
+        font-size: 2rem; 
+        width: calc(100% - 2rem); 
+        transition: border-color 0.3s, box-shadow 0.3s;
     }
 
     .auth-form input:focus {
-        outline: none; /* Remove default focus outline */
-        border-color: #3498db; /* Highlight border color on focus */
-        box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.25); /* Subtle glow effect */
-        background-color: #34495e; /* Slightly lighter background on focus */
+        outline: none;
+        border-color: var(--text-color);
     }
 
     .auth-form input::placeholder {
-        color: #95a5a6; /* Lighter color for placeholder text */
+        color: var(--text-color); 
     }
 
     .auth-form input[type="email"],
     .auth-form input[type="password"] {
-        background-color: #08090a;
     }
 
-    .button {
-        display: flex;
-        align-items: center;
-        width: 100%;
-        gap: 5px;
-        padding: 10px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background-color 0.3s;
-    }
-
-    .button-signup {
-        background-color: #27ae60;
-        width: 100%;
-        display: flex;
-
-    }
-
-    .button-login {
-        background-color: #3498db;
-        width: 100%;
-        display: flex;
-
-    }
-
-    .logout-button {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: fixed;
-        right: 2rem;
-        top: 70px;
-        gap: 5px;
-        /* width: 100%; */
-        padding: 10px;
-        /* margin-top: 10px; */
-        background-color: #e74c3c;
-        border: none;
-        border-radius: 5px;
-        color: white;
-        cursor: pointer;
-        transition: background-color 0.3s;
-        font-size: 16px;
-        z-index: 1000;
-    }
 
     .error {
         color: #e74c3c;
@@ -321,33 +287,44 @@
 
 .button-group {
         display: flex;
-        flex-direction: row;
+        flex-direction: column;
         justify-content: space-between;
+        width: 100%;
         align-items: center;
-        width: 250px;
-        gap: 2px;
+        gap: 1rem;
         /* margin-left: 5%; */
         /* margin-top: 10px; */
         /* width: 100%; */
-        
+        button.auth {
+            border: none;
+            border-radius: 2rem; 
+            cursor: pointer; 
+            display: flex;
+            flex: 1;
+            gap: 1rem;
+            width: 100%;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            padding: 1rem;
+            transition: all 0.3s ease;
+
+            &:hover {
+                background: var(--bg-color);
+                padding: 2rem;
+            }
+
+            span {
+                display: flex;
+                gap: 1rem;
+                justify-content: center;
+                align-items: center;
+
+
+            }
+        }
 
     }
 
-.button-group .button {
-    /* background-color: #007bff; Button background color */
-    color: white; /* Button text color */
-    border: none; /* Remove default border */
-    border-radius: 4px; /* Rounded corners */
-    cursor: pointer; /* Pointer cursor on hover */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-}
-
-/* Hover effects for buttons */
-.button-group .button:hover {
-    background-color: #0056b3; /* Darken background on hover */
-}
 
 </style>

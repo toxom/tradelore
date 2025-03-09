@@ -25,7 +25,7 @@
     import TokenPanel from '../admin/TokenPanel.svelte'
     import TabSelector from '$lib/containers/TabSelector.svelte';
     import WalletForm from '$lib/overlays/WalletForm.svelte';
-
+    import Security from '$lib/auth/Security.svelte';
     export let user: any;
     export let onClose: () => void;
     let activeTab = 'ID'; 
@@ -75,7 +75,7 @@
 <div class="modal-overlay" on:click={handleOutsideClick} transition:fade={{ duration: 300 }}>
     <div class="modal-content" on:click|stopPropagation>
         <TabSelector
-        tabs={['ID', 'Preferences', 'Settings', 'Admin']}
+        tabs={['ID', 'Preferences', 'Security', 'Admin']}
         bind:activeTab
         on:tabChange={(e) => { 
             activeTab = e.detail.tab; 
@@ -200,7 +200,8 @@
             <div class="dropdown-section">
 
         </div>
-        {:else if activeTab === 'Settings'}
+        {:else if activeTab === 'Security'}
+        <Security/>
         {:else if activeTab === 'Admin'}
         <WalletForm />
 

@@ -2,16 +2,26 @@ import PocketBase from 'pocketbase';
 import { onMount } from 'svelte';
 import type { AuthModel } from 'pocketbase';
 import { writable } from 'svelte/store'
-import type { User, BusinessAccount } from '../types/accounts';
+import type { User } from '../types/accounts';
+import { ClientResponseError } from 'pocketbase';
+
+let publishTimer: ReturnType<typeof setTimeout> | null = null;
+let lastPublishedPosition: { userId: string; x: number; y: number; name: string } | null = null;
+let lastAuthCheck = 0;
+const AUTH_CHECK_COOLDOWN = 5000;
 
 export const pb = new PocketBase('http://127.0.0.1:8090');
 pb.autoCancellation(false);
-export const currentUser = writable<User | null>(pb.authStore.model);
+
+export const currentUser = writable<User | null>(pb.authStore.model as User | null);
+
 pb.authStore.onChange((auth) => {
     console.log('authStore changed', auth);
-    currentUser.set(pb.authStore.model);
+    console.log('New currentUser:', pb.authStore.model);
+	currentUser.set(pb.authStore.model as User | null);
 });
 console.log('PocketBase URL:', pb.baseUrl);
+
 export async function checkPocketBaseConnection() {
     try {
         const health = await pb.health.check();
@@ -26,9 +36,13 @@ export async function checkPocketBaseConnection() {
 
 export async function ensureAuthenticated(): Promise<boolean> {
     console.log('Checking authentication...');
+    const now = Date.now();
+	if (now - lastAuthCheck < AUTH_CHECK_COOLDOWN && pb.authStore.isValid) {
+        return true;
+    }
+    lastAuthCheck = now;    
     console.log('Current auth model:', pb.authStore.model);
     console.log('Is auth valid?', pb.authStore.isValid);
-
     if (!pb.authStore.isValid) {
         console.log('Auth token is invalid. Attempting to refresh...');
         try {
@@ -73,10 +87,9 @@ export async function signUp(email: string, password: string): Promise<User | nu
         return null;
     }
 }
-export async function signIn(email: string, password: string): Promise<User | null> {
+export async function signIn(email: string, password: string): Promise<AuthModel | null> {
     try {
         const authData = await pb.collection('users').authWithPassword<User>(email, password);
-        // Cast the auth model to your User type
         return authData.record as User;
     } catch (error) {
         console.error('Sign-in error:', error instanceof Error ? error.message : String(error));

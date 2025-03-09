@@ -85,17 +85,17 @@
         toggleOverlay('styles'); 
     }
 
-	async function handleLogout() {
-		try {
-			await pb.authStore.clear();
-			currentUser.set(null);
-			dispatch('logout');
-			onClose();
-			goto('/');
-		} catch (err) {
-			console.error('Logout error:', err);
-		}
-	}
+	// async function handleLogout() {
+	// 	try {
+	// 		await pb.authStore.clear();
+	// 		currentUser.set(null);
+	// 		dispatch('logout');
+	// 		onClose();
+	// 		goto('/');
+	// 	} catch (err) {
+	// 		console.error('Logout error:', err);
+	// 	}
+	// }
 
 	function toggleOverlay(overlayName: keyof typeof overlayState, exclusive: boolean = true) {
     if (exclusive) {
@@ -219,7 +219,7 @@
 			<button class="close-button" transition:fly={{ y: -200, duration: 300}} on:click={() => showAuth = false}>
 				<X size={24} />
 			</button>
-			<Auth on:success={handleAuthSuccess} on:logout={handleLogout} />
+			<Auth on:success={handleAuthSuccess} />
 		</div>
 	</div>
 	{/if}
@@ -233,7 +233,6 @@
 				user={$currentUser} 
 				userId={$currentUser ? $currentUser.id : null} 
 				onClose={() => showProfile = false} 
-				on:logout={handleLogout} 
 			/>
 		</div>
 	</div>

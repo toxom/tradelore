@@ -1,9 +1,11 @@
 <script lang="ts">
     import { onMount, createEventDispatcher } from 'svelte';
     import { fade } from 'svelte/transition';
-    import { pb, currentUser, checkPocketBaseConnection, updateUser } from '$lib/pocketbase';
+    import { pb, currentUser, checkPocketBaseConnection, updateUser, signIn } from '$lib/pocketbase';
     import { Camera, LogIn, UserPlus, LogOutIcon } from 'lucide-svelte';
     import Profile from '$lib/overlays/ProfileOverlay.svelte'
+    import type { User } from 'types/accounts';
+    import { ClientResponseError } from 'pocketbase';
 
     let email: string = '';
     let password: string = '';
@@ -13,18 +15,25 @@
 
     const dispatch = createEventDispatcher();
 
-    onMount(async () => {
-        const isConnected = await checkPocketBaseConnection();
-        if (!isConnected) {
-            errorMessage = 'Unable to connect to the server. Please try again later.';
-        }
-        if ($currentUser && $currentUser.id) {
-            updateAvatarUrl();
-        }
-    });
+
 
     function handleAuthSuccess() {
         dispatch('success');
+    }
+    async function signUp() {
+        try {
+            const data = {
+                email,
+                password,
+                passwordConfirm: password,
+                name: 'username',
+            };
+            const createdUser = await pb.collection('users').create(data);
+            await login();
+        } catch (err) {
+            console.error('Signup error:', err);
+            errorMessage = err.message || 'An error occurred during signup';
+        }
     }
 
     async function login() {
@@ -38,23 +47,6 @@
             errorMessage = err.message || 'An error occurred during login';
         }
     }
-
-    async function signUp() {
-        try {
-            const data = {
-                email,
-                password,
-                passwordConfirm: password,
-                name: 'Hey',
-            };
-            const createdUser = await pb.collection('users').create(data);
-            await login();
-        } catch (err) {
-            console.error('Signup error:', err);
-            errorMessage = err.message || 'An error occurred during signup';
-        }
-    }
-
     async function logout() {
         try {
             await pb.authStore.clear();
@@ -79,6 +71,15 @@
     $: if ($currentUser && $currentUser.avatar) {
         updateAvatarUrl();
     }
+    onMount(async () => {
+        const isConnected = await checkPocketBaseConnection();
+        if (!isConnected) {
+            errorMessage = 'Unable to connect to the server. Please try again later.';
+        }
+        if ($currentUser && $currentUser.id) {
+            updateAvatarUrl();
+        }
+    });
 </script>
 
 <div class="auth-container">+
@@ -151,7 +152,7 @@
 
 {#if showProfileModal}
     <Profile user={$currentUser} onClose={toggleProfileModal} />
-    <button class="logout-button" on:click={logout} transition:fade={{ duration: 300 }}>
+    <button class="logout-button" on:click={signOut} transition:fade={{ duration: 300 }}>
         <LogOutIcon size={24} />
         <span>Logout</span>
     </button>

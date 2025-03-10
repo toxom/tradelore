@@ -69,17 +69,23 @@
 
 </script>
 
-
+<PieChart     
+size={700} 
+percent={75} 
+bgColor="white" 
+fgColor="green" 
+/>
 <div class="basic-container">
     <div class="metric">
-        <div class="label">Total Balance</div>
+        <!-- <div class="label">Total Balance</div> -->
         <div class="value">${totalBalance.toFixed(2)}</div>
-        <div class="conversion">≈${totalBalance.toFixed(2)}</div>
+        <div class="value">{portfolioGrowth.toFixed(1)}%</div>
+
+        <!-- <div class="conversion">≈${totalBalance.toFixed(2)}</div> -->
     </div>
     <div class="metric">
-        <div class="label">Portfolio Growth</div>
-        <div class="value">{portfolioGrowth.toFixed(1)}%</div>
-        <div class="conversion">≈${portfolioGrowth.toFixed(2)}</div>
+        <!-- <div class="label">Portfolio Growth</div> -->
+        <!-- <div class="conversion">≈${portfolioGrowth.toFixed(2)}</div> -->
     </div>
 
 </div>
@@ -87,12 +93,7 @@
     Add Funds
 </button>
 
-  <PieChart     
-    size={700} 
-    percent={75} 
-    bgColor="white" 
-    fgColor="green" 
-/>
+
 <div class="recent-activity">
     <h3>Recent Activity</h3>
     <ul class="activity-list">
@@ -139,28 +140,34 @@
     }
     .basic-container {
         display: flex;
+        flex-direction: column;
         align-items: top;
-        justify-content: left;
-        gap: 4rem;
-        width: auto;
+        position: absolute;
+        top: 21rem;
+        justify-content: center;
+        gap: 0;
+        left: 0;
+        margin-left: 0;
+        width: 100%;
         height: auto;
         margin-bottom: 1rem;
-        padding: 2rem;
 
     }
 
     .metric {
         display: flex;
         flex-direction: column;
-        width: 50%;
+        width: auto;
         height: 100%;
         gap: 1rem;
-        margin-bottom: 2rem;
-        text-align: left;
+        margin-bottom: 0;
+        text-align: center;
+        justify-content: center;
+        align-items: center;
         & .value {
             font-size: 4rem;
         font-weight: 600;
-        color: var(--text-color);
+        color: var(--tertiary-color);
         }
         & .label {
             font-size: 2rem;

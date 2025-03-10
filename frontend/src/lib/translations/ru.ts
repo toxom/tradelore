@@ -56,7 +56,9 @@ export default {
 			key: "Секретный ключ (если необходимо):",
 			placeholder: "Введите код из приложения аутентификатора",
 			secondAction: "Включить 2FA",
-			verify: "Проверить код 2FA"
+			verify: "Проверить код 2FA",
+			check: '2FA Активный',
+			reset: 'Сброс 2FA',
 		  },
 		  password: {
 			setup: "Введите код 2FA для сброса пароля",

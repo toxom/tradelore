@@ -2,7 +2,15 @@ import { pb } from '$lib/pocketbase';
 import { predefinedTokens } from 'utils/constants'; 
 import type { Token } from 'types/walletTypes';
 
- 
+export interface TokenPrice {
+  id: string;
+  ticker: string;
+  name: string;
+  price: number;
+  priceChangePercentage24h?: number;
+  lastUpdated: string;
+}
+
 export let errorMessage = '';
 export let tokens: Token[] = [];
 export let newToken: Token = {
@@ -223,4 +231,47 @@ export async function handleUpdateToken() {
         console.error('Failed to update token:', error);
         errorMessage = 'Failed to update token. Check your permissions.';
     }
+}
+export async function fetchTokenPrices(tokens: Token[]): Promise<TokenPrice[]> {
+  try {
+    // Filter for active tokens
+    const activeTokens = tokens.filter(token => token.isActive);
+    
+    // Extract unique token IDs to avoid duplicate API calls
+    const uniqueTokenIds = [...new Set(activeTokens.map(token => token.tokenId))];
+    
+    if (uniqueTokenIds.length === 0) {
+      console.log("No active tokens to fetch prices for");
+      return [];
+    }
+    
+    console.log(`Fetching prices for ${uniqueTokenIds.length} unique tokens`);
+    
+    // Join token IDs with commas for the API call
+    const idsParam = uniqueTokenIds.join(',');
+    const response = await fetch(
+      `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${idsParam}&order=market_cap_desc&per_page=100&page=1&sparkline=false&price_change_percentage=24h`
+    );
+    
+    if (!response.ok) {
+      console.error(`Error fetching prices: ${response.status} ${response.statusText}`);
+      return [];
+    }
+    
+    const data = await response.json();
+    console.log(`Received price data for ${data.length} tokens`);
+    
+    return data.map((item: any) => ({
+      id: item.id,
+      ticker: item.symbol.toUpperCase(),
+      name: item.name,
+      price: item.current_price,
+      priceChangePercentage24h: item.price_change_percentage_24h,
+      lastUpdated: item.last_updated
+    }));
+    
+  } catch (error) {
+    console.error("Error in fetchTokenPrices:", error);
+    return [];
+  }
 }

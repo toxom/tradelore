@@ -57,6 +57,8 @@ export default {
 			placeholder: 'Enter the code from your authenticator app',
 			secondAction: 'Enable 2FA',
 			verify: 'Verify 2FA Code',
+			check: '2FA Active',
+			reset: 'Reset 2FA',
 		},
 		password: {
 			setup: 'Enter 2FA Code to Reset Password',

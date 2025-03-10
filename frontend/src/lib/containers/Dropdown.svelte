@@ -1,9 +1,11 @@
 <script lang="ts">
+	import { Languages } from 'lucide-svelte';
     import { createEventDispatcher } from 'svelte';
     import { fade } from 'svelte/transition';
-  
+    import type { ComponentType } from 'svelte'; 
+
     export let options: Array<{ code: string; name: string; label?: string | undefined; currentTime?: string }>;    export let selectedValue: string;
-    export let icon: any = null;
+    export let icon: ComponentType | null = null;
 
     let isOpen = false;
     const dispatch = createEventDispatcher();
@@ -16,6 +18,7 @@
   
     $: selectedLabel = options.find(opt => opt.code === selectedValue)?.label || options.find(opt => opt.code === selectedValue)?.currentTime || selectedValue;
     $: selectedName = options.find(opt => opt.code === selectedValue)?.name || selectedValue;
+    $: selectedIcon = options.find(opt => opt.code === selectedValue)?.icon || icon; 
 
   </script>
   
@@ -23,12 +26,15 @@
     <span>
 
     <button class="dropdown-btn" on:click={() => isOpen = !isOpen} class:active={isOpen}>
-        {#if icon}
-          <svelte:component this={icon} size={16}/>
-        {/if}
+      {#if selectedIcon}
+          <svelte:component this={selectedIcon} size={16} />
+      {/if}
           {selectedLabel}
-          {selectedName}
           
+
+          <span class="text">
+            {selectedName}
+          </span>
         ▼
       </button>
     </span>
@@ -41,8 +47,12 @@
               class:active={code === selectedValue}
               on:click={() => handleSelect(code)}
             >
+
               {label}
-              {name}
+              <span class="text">
+                {name}
+
+              </span>
             </button>
           {/each}
         </div>
@@ -66,7 +76,8 @@
       display: flex;
       flex-direction: row;
       align-items: center;
-      justify-content: space-between;
+      justify-content: space-around;
+      background-color: var(--primary-color);
       gap: 1rem;
       padding: 0.5rem;
       font-size: 1rem;
@@ -75,12 +86,13 @@
       border-color: var(--secondary-color);
       border-radius: 1rem;
       cursor: pointer;
-      width: max-content;
+      min-width: 100px;
+      width:auto;
       transition: all 0.3s ease;
 
         color: var(--text-color);
       &.active {
-        background: var(--bg-color);
+        background: var(--tertiary-color);
       }
       h3 {
         color: var(--text-color);
@@ -91,15 +103,22 @@
       display: flex;
       flex-direction: column;
     }
+    span.text {
+      display: none;
+      &:hover {
+        display: inline;
+      }
+    }
     }
     .dropdown-content {
       position: absolute;
       top: 110%;
       right: 0;
+      left: 0;
       display: flex;
       flex-direction: column;
       width: auto;
-      justify-content: center;
+      justify-content: flex-start;
       align-items: center;
       /* min-width: 120px; */
       background: var(--secondary-color);
@@ -109,6 +128,9 @@
       border-radius: 1rem;
       padding: 0.5rem;
       gap: 0.5rem;
+      overflow-y: scroll;
+      max-height: 50vh;
+      min-width: 300px;
       
     }
 
@@ -123,10 +145,10 @@
     .dropdown-item {
         width: 100%;
       border: none;
-      background: #e1e1e1;
       margin-left: 0;
       cursor: pointer;
       text-align: left;
+      background-color: var(--bg-color);
       display: flex;
       align-items: left;
       flex-direction: row;
@@ -146,4 +168,6 @@
       font-weight: 700;
 
     }
+
+    
   </style>

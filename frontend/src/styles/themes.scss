@@ -38,7 +38,7 @@ $themes: (
 		font-family: 'Merriweather',
 		primary-color: #f4f4f4,
 		secondary-color: #f3f9fe,
-		tertiary-color: #337eb8,
+		tertiary-color: #cbe8ff,
 		accent1: linear-gradient(45deg, #4CAF50, #81C784)
 	),
 	dark: (
@@ -181,6 +181,7 @@ $themes: (
 	font-size: 1.5rem;
 	cursor: pointer;
 	transition: all 0.3s ease;
+	z-index: 5000;
 	span {
 		display: none;
 
@@ -200,6 +201,20 @@ $themes: (
 	}
 }
 
+.row-medium {
+	display: flex;
+	flex-direction: row;
+	position: relative;
+	gap: 1rem;
+	height: 2rem;
+	width: 100%;
+	padding: 1rem;
+	font-size: 1.5rem;
+	color: var(--text-color);
+	justify-content: center;
+	align-items: center;
+}
+
 .logout-button {
 	span {
 		color: var(--primary-color);
@@ -214,6 +229,11 @@ $themes: (
 	}
 }
 
+.header-button {
+	display: flex;
+	flex-direction: row;
+	background-color: red !important;
+}
 
 .toggle-button {
 	display: flex;

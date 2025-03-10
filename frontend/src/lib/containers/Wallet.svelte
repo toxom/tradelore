@@ -43,13 +43,12 @@
     }
     .basic-container {
         display: flex;
-        align-items: top;
-        justify-content: left;
-        gap: 4rem;
+        align-items: center;
+        justify-content: center;
+        gap: 0;
         width: auto;
         height: auto;
         margin-bottom: 1rem;
-
     }
 
     .metric {

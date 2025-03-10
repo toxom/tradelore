@@ -3,13 +3,14 @@ import { pb } from '$lib/pocketbase';
 import { currentUser } from '$lib/pocketbase';
 import { browser } from '$app/environment';
 import countriesData from 'world-countries';
-
+import { Languages, CalendarClock, Currency, Earth } from 'lucide-svelte';
+import type { ComponentType } from 'svelte'; 
 type LangCode = 'en' | 'ru';
 
 // Define supported languages
-export const languages: Array<{ code: LangCode; label: string; name: string }> = [
-    { code: 'en', name: 'English', label: '🇬🇧' },
-    { code: 'ru', name: 'Русский', label: '🇷🇺' }
+export const languages: Array<{ code: LangCode; label: string; icon: ComponentType; name: string }> = [
+    { code: 'en', name: 'English', label: '🇬🇧', icon: Languages },
+    { code: 'ru', name: 'Русский', label: '🇷🇺', icon: Languages }
 ];
 
 // Define supported countries
@@ -20,42 +21,42 @@ export const countries = countriesData.map((country) => ({
 }));
 
 // Define supported timezones
-export const timezones: Array<{ code: string; name: string; label: string }> = [
-    { code: 'UTC', name: 'Coordinated Universal Time', label: 'GMT+0' },
-    { code: 'GMT', name: 'Greenwich Mean Time', label: 'GMT+0' },
-    { code: 'CET', name: 'Central European Time', label: 'GMT+1' },
-    { code: 'EET', name: 'Eastern European Time', label: 'GMT+2' },
-    { code: 'MSK', name: 'Moscow Standard Time', label: 'GMT+3' },
-    { code: 'EST', name: 'Eastern Standard Time', label: 'GMT-5' },
-    { code: 'CST', name: 'Central Standard Time', label: 'GMT-6' },
-    { code: 'MST', name: 'Mountain Standard Time', label: 'GMT-7' },
-    { code: 'PST', name: 'Pacific Standard Time', label: 'GMT-8' },
-    { code: 'JST', name: 'Japan Standard Time', label: 'GMT+9' },
-    { code: 'CCT', name: 'China Standard Time', label: 'GMT+8' },
-    { code: 'HKT', name: 'Hong Kong Time', label: 'GMT+8' },
-    { code: 'GST', name: 'Gulf Standard Time', label: 'GMT+4' },
-    { code: 'IST', name: 'Indian Standard Time', label: 'GMT+5:30' },
-    { code: 'AEST', name: 'Australian Eastern Standard Time', label: 'GMT+10' },
-    { code: 'SAST', name: 'South African Standard Time', label: 'GMT+2' },
-    { code: 'BRT', name: 'Brasilia Time', label: 'GMT-3' },
-    { code: 'EDT', name: 'Eastern Daylight Time', label: 'GMT-4' },
-    { code: 'CDT', name: 'Central Daylight Time', label: 'GMT-5' },
-    { code: 'MDT', name: 'Mountain Daylight Time', label: 'GMT-6' },
-    { code: 'PDT', name: 'Pacific Daylight Time', label: 'GMT-7' },
-    { code: 'NZST', name: 'New Zealand Standard Time', label: 'GMT+12' },
-    { code: 'HST', name: 'Hawaii Standard Time', label: 'GMT-10' },
-    { code: 'ART', name: 'Argentina Time', label: 'GMT-3' },
+export const timezones: Array<{ code: string; name: string; icon: ComponentType; label: string }> = [
+    { code: 'UTC', name: 'Coordinated Universal Time', label: 'GMT+0', icon: CalendarClock },
+    { code: 'GMT', name: 'Greenwich Mean Time', label: 'GMT+0', icon: CalendarClock  },
+    { code: 'CET', name: 'Central European Time', label: 'GMT+1', icon: CalendarClock  },
+    { code: 'EET', name: 'Eastern European Time', label: 'GMT+2', icon: CalendarClock  },
+    { code: 'MSK', name: 'Moscow Standard Time', label: 'GMT+3', icon: CalendarClock  },
+    { code: 'EST', name: 'Eastern Standard Time', label: 'GMT-5', icon: CalendarClock  },
+    { code: 'CST', name: 'Central Standard Time', label: 'GMT-6', icon: CalendarClock  },
+    { code: 'MST', name: 'Mountain Standard Time', label: 'GMT-7', icon: CalendarClock },
+    { code: 'PST', name: 'Pacific Standard Time', label: 'GMT-8', icon: CalendarClock  },
+    { code: 'JST', name: 'Japan Standard Time', label: 'GMT+9', icon: CalendarClock  },
+    { code: 'CCT', name: 'China Standard Time', label: 'GMT+8', icon: CalendarClock  },
+    { code: 'HKT', name: 'Hong Kong Time', label: 'GMT+8', icon: CalendarClock  },
+    { code: 'GST', name: 'Gulf Standard Time', label: 'GMT+4', icon: CalendarClock  },
+    { code: 'IST', name: 'Indian Standard Time', label: 'GMT+5:30', icon: CalendarClock  },
+    { code: 'AEST', name: 'Australian Eastern Standard Time', label: 'GMT+10', icon: CalendarClock  },
+    { code: 'SAST', name: 'South African Standard Time', label: 'GMT+2', icon: CalendarClock  },
+    { code: 'BRT', name: 'Brasilia Time', label: 'GMT-3', icon: CalendarClock  },
+    { code: 'EDT', name: 'Eastern Daylight Time', label: 'GMT-4', icon: CalendarClock  },
+    { code: 'CDT', name: 'Central Daylight Time', label: 'GMT-5', icon: CalendarClock  },
+    { code: 'MDT', name: 'Mountain Daylight Time', label: 'GMT-6' , icon: CalendarClock },
+    { code: 'PDT', name: 'Pacific Daylight Time', label: 'GMT-7', icon: CalendarClock  },
+    { code: 'NZST', name: 'New Zealand Standard Time', label: 'GMT+12', icon: CalendarClock  },
+    { code: 'HST', name: 'Hawaii Standard Time', label: 'GMT-10', icon: CalendarClock  },
+    { code: 'ART', name: 'Argentina Time', label: 'GMT-3' , icon: CalendarClock },
 ];
 
 // Define supported currencies
-export const currencies: Array<{ code: string; name: string; label: string }> = [
+export const currencies: Array<{ code: string; name: string; icon: ComponentType; label: string }> = [
     { code: 'USD', name: 'United States Dollar', label: '$' },
     { code: 'EUR', name: 'Euro', label: '€' },
-    { code: 'RUB', name: 'Russian Ruble', label: '₽' },
+    { code: 'RUB', name: 'Russian Ruble', label: '₽'  },
     { code: 'CNY', name: 'Chinese Yuan', label: '¥' },
     { code: 'BTC', name: 'Bitcoin', label: '₿' },
     { code: 'ETH', name: 'Ethereum', label: 'Ξ' },
-    { code: 'USDT', name: 'Tether', label: '💲' },
+    { code: 'USDT', name: 'Tether', label: '💲'  },
     { code: 'XRP', name: 'Ripple', label: '✕' },
     { code: 'SOL', name: 'Solana', label: '◎' }
 ];
@@ -70,7 +71,7 @@ function createPreferenceStore<T>(key: string, defaultValue: T) {
             if (user) {
                 try {
                     const userData = await pb.collection('users').getOne(user.id);
-                    if (userData[key]) {
+                    if (userData[key] !== undefined) {
                         set(userData[key]);
                     }
                 } catch (error) {

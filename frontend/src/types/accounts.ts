@@ -21,6 +21,8 @@ export interface User {
   riskTolerance?: string;
   notificationPreferences?: Record<string, boolean>;
   role: string;
+  totpSecret?: string; 
+  factorValidated?: boolean; 
 }
 
 

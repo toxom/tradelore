@@ -4,6 +4,7 @@
     import { pb, currentUser } from '$lib/pocketbase';
     import { get } from 'svelte/store';
     import { t } from '../../stores/translation.store';
+	import { ShieldCheck } from 'lucide-svelte';
 
     let username = ''; // Will be populated from the current auth
     let token = ''; // TOTP code entered by the user
@@ -33,6 +34,12 @@
             is2FAEnabled = !!userData.totpSecret;
             console.log('2FA enabled:', is2FAEnabled);
             console.log('TOTP secret:', userData.totpSecret);
+            const savedSecret = localStorage.getItem('totpSecret');
+            const savedQRCode = localStorage.getItem('totpQRCode');
+            if (savedSecret && savedQRCode) {
+              secret = savedSecret;
+              qrCode = savedQRCode;
+            }
           } catch (fetchError) {
             console.error('Error fetching user data:', fetchError);
           }
@@ -46,30 +53,34 @@
   
     // Generate QR code for 2FA setup
     async function generateQRCodeForUser() {
-      isGeneratingQR = true;
-      try {
-        if (!username) {
-          const currentUserValue = get(currentUser);
-          if (currentUserValue) {
-            username = currentUserValue.username;
-          } else {
-            throw new Error('No username available');
-          }
-        }
-        
-        // Generate a new TOTP secret for the user
-        const { secret: generatedSecret, otpauth } = generateTOTPSecret(username);
-        secret = generatedSecret;
-        
-        // Generate QR code from the otpauth URL
-        qrCode = await generateQRCode(otpauth);
-      } catch (error) {
-        console.error('Error generating QR code:', error);
-        alert('Failed to generate QR code: ' + (error.message || 'Unknown error'));
-      } finally {
-        isGeneratingQR = false;
+  isGeneratingQR = true;
+  try {
+    if (!username) {
+      const currentUserValue = get(currentUser);
+      if (currentUserValue) {
+        username = currentUserValue.username;
+      } else {
+        throw new Error('No username available');
       }
     }
+
+    // Generate a new TOTP secret for the user
+    const { secret: generatedSecret, otpauth } = generateTOTPSecret(username);
+    secret = generatedSecret;
+
+    // Generate QR code from the otpauth URL
+    qrCode = await generateQRCode(otpauth);
+
+    // Save the secret and QR code to localStorage
+    localStorage.setItem('totpSecret', secret);
+    localStorage.setItem('totpQRCode', qrCode);
+  } catch (error) {
+    console.error('Error generating QR code:', error);
+    alert('Failed to generate QR code: ' + (error.message || 'Unknown error'));
+  } finally {
+    isGeneratingQR = false;
+  }
+}
   
     // Handle enabling 2FA
     async function enable2FA() {
@@ -106,38 +117,81 @@
         alert($t('forms.twoF.alertFailed') + (error.message || 'Unknown error'));
       }
     }
-  
-    async function verifyCode() {
-      twoFAError = '';
-      try {
-        const currentUserValue = get(currentUser);
-        console.log('Current user for verification:', currentUserValue);
-        console.log('TOTP secret for verification:', currentUserValue?.totpSecret);
-        
-        if (!currentUserValue?.totpSecret) {
-          alert($t('forms.twoF.alertVerify'));
-          return;
-        }
-  
-        console.log('Verifying token:', token);
-        const isValid = verifyTOTP(currentUserValue.totpSecret, token);
-        console.log('Token verification result:', isValid);
-  
-        if (isValid) {
-          if (isPasswordResetRequested) {
-            // Trigger password reset logic here
-            await requestPasswordReset();
-          } else {
-            alert($t('forms.twoF.alertVerifySuccess'));
-          }
-        } else {
-          twoFAError = $t('forms.twoF.alertVerifyFailed');
-        }
-      } catch (error) {
-        console.error('Error verifying code:', error);
-        twoFAError = $t('forms.twoF.alertVerifyError');
-      }
+    async function reset2FA() {
+  try {
+    if (!pb.authStore.isValid) {
+      alert('You need to be logged in to reset 2FA.');
+      return;
     }
+
+    const currentUserValue = get(currentUser);
+    if (!currentUserValue) {
+      alert('No user data available.');
+      return;
+    }
+
+    // Clear the TOTP secret from the user's record
+    const updatedUser = await pb.collection('users').update(currentUserValue.id, {
+      totpSecret: null,
+      factorValidated: false 
+    });
+
+    // Update the local state
+    currentUser.set(updatedUser);
+    userObject = updatedUser;
+    is2FAEnabled = false;
+    secret = '';
+    qrCode = '';
+    localStorage.removeItem('totpSecret');
+    localStorage.removeItem('totpQRCode');
+
+    alert($t('forms.twoF.alertResetSuccess'));
+  } catch (error) {
+    console.error('Error resetting 2FA:', error);
+    alert($t('forms.twoF.alertResetFailed') + (error.message || 'Unknown error'));
+  }
+}
+  
+async function verifyCode() {
+  twoFAError = '';
+  try {
+    const currentUserValue = get(currentUser);
+    console.log('Current user for verification:', currentUserValue);
+    console.log('TOTP secret for verification:', currentUserValue?.totpSecret);
+
+    if (!currentUserValue?.totpSecret) {
+      alert($t('forms.twoF.alertVerify'));
+      return;
+    }
+
+    console.log('Verifying token:', token);
+    const isValid = verifyTOTP(currentUserValue.totpSecret, token);
+    console.log('Token verification result:', isValid);
+
+    if (isValid) {
+      // Update the user's record to set factorValidated to true
+      const updatedUser = await pb.collection('users').update(currentUserValue.id, {
+        factorValidated: true
+      });
+
+      // Update the local state
+      currentUser.set(updatedUser);
+      userObject = updatedUser;
+
+      if (isPasswordResetRequested) {
+        // Trigger password reset logic here
+        await requestPasswordReset();
+      } else {
+        alert($t('forms.twoF.alertVerifySuccess'));
+      }
+    } else {
+      twoFAError = $t('forms.twoF.alertVerifyFailed');
+    }
+  } catch (error) {
+    console.error('Error verifying code:', error);
+    twoFAError = $t('forms.twoF.alertVerifyError');
+  }
+}
   
     // Request password reset
     async function requestPasswordReset() {
@@ -185,7 +239,8 @@
               </p>
               <p>            
                 {$t('forms.twoF.key')}
-                <code>{secret}</code></p>
+                <code>{secret}</code>
+              </p>
               <button on:click={enable2FA}>
                 {$t('forms.twoF.secondAction')}
               </button>
@@ -200,33 +255,47 @@
   
       {#if is2FAEnabled}
         <div class="verify-container">
-          {$t('forms.twoF.verify')}
-          <input 
-            type="text" 
-            bind:value={token} 
-            placeholder={$t('forms.twoF.placeholder')}
-            maxlength="6"
-            pattern="[0-9]*"
-            inputmode="numeric"
-          />
-          {#if twoFAError}
-            <p class="error">{twoFAError}</p>
+          {#if !userObject?.factorValidated}
+            <h3>
+              {$t('forms.twoF.verify')}
+            </h3>
+            <input 
+              type="text" 
+              bind:value={token} 
+              placeholder={$t('forms.twoF.placeholder')}
+              maxlength="6"
+              pattern="[0-9]*"
+              inputmode="numeric"
+            />
+            {#if twoFAError}
+              <p class="error">{twoFAError}</p>
+            {/if}
+            <button on:click={verifyCode}>
+              {$t('forms.twoF.verify')}
+            </button>
+          {:else}
+            <div class="row-medium">
+              <ShieldCheck/>
+              <h3>
+                {$t('forms.twoF.check')}
+              </h3>
+            </div>
+            <div class='btn-row'>
+              
+              <button on:click={reset2FA} class="reset-button">
+                {$t('forms.twoF.reset')}
+              </button>
+              {#if !isPasswordResetRequested}
+                <button on:click={() => isPasswordResetRequested = true}>
+                  {$t('forms.password.firstAction')}
+                </button>
+              {/if}
+            </div>
           {/if}
-          <button on:click={verifyCode}>
-            {$t('forms.twoF.verify')}
-          </button>
         </div>
       {/if}
   
-      {#if !isPasswordResetRequested && is2FAEnabled}
-        <div class="reset-container">
-          <button on:click={() => isPasswordResetRequested = true}>
-            {$t('forms.password.firstAction')}
-          </button>
-        </div>
-      {/if}
-  
-      {#if isPasswordResetRequested && is2FAEnabled}
+      {#if isPasswordResetRequested && is2FAEnabled && userObject?.factorValidated}
         <div class="reset-container">
           <h3>          
             {$t('forms.password.placeholder')}
@@ -237,7 +306,7 @@
           <input 
             type="text" 
             bind:value={token} 
-            placeholder= {$t('forms.password.placeholder')}
+            placeholder={$t('forms.password.placeholder')}
             maxlength="6"
             pattern="[0-9]*"
             inputmode="numeric"
@@ -257,7 +326,7 @@
         color: var(--text-color)
     }       
     .container {
-      max-width: 500px;
+      max-width: auto;
       margin: 0 auto;
       padding: 2rem;
       background: var(--bg-color);
@@ -280,12 +349,15 @@
     .setup-container, .verify-container, .reset-container, .auth-warning {
       margin-bottom: 20px;
       padding: 15px;
-      border: 1px solid var(--tertiary-color);
+      border: 1px solid var(--secondary-color);
+      background: var(--bg-gradient-fade);
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
     }
     
     .auth-warning {

@@ -108,15 +108,16 @@
     use:drag={{ onDragEnd: handleModalDragEnd }}
     >
     <div class="actions">
+        <button class="close-button" on:click={onClose}>
+            <X />
+        </button>
         <button class="logout-button" on:click={logout} transition:fade={{ duration: 300 }}>
             <LogOutIcon />
             <span>           
                 {$t('profile.logout')}          
             </span>
         </button>
-        <button class="close-button" on:click={onClose}>
-            <X />
-        </button>
+
     </div>
     <div class="modal-header">
         <TabSelector
@@ -330,7 +331,7 @@
 
     .modal-overlay {
         position: fixed;
-        top: 4rem;
+        top: 0;
         left: 0;
         right: 0;
         bottom: auto;
@@ -340,7 +341,7 @@
         display: flex;
         justify-content: flex-start;
         align-items: flex-end;
-        z-index: 1000;
+        z-index: 9000;
         width: auto;
         display: flex;
         /* background-color: #131313; */
@@ -397,24 +398,24 @@
         display: flex;
         flex-direction: column;
         position: fixed;
-        top: 4rem;
+        top: 0;
         width: 100%;
-        height: 90vh;
-        overflow-y: scroll;
-    scrollbar-width:2px;
-    scrollbar-color: var(--secondary-color) transparent;
-    scroll-behavior: smooth; 
+        height: 96vh;
+        overflow: hidden;
+
     transition: all 0.3s ease;
         /* height: 100vh; */
     }
 
     .tab-content {
         margin: 0;
-        overflow-y: auto;
         height: auto;
         width: 100%;
         transition: all 0.3s ease;
-
+        overflow-y: auto;
+        scrollbar-width:2px;
+    scrollbar-color: var(--secondary-color) transparent;
+    scroll-behavior: smooth; 
     }
 
     .column-content {
@@ -444,14 +445,16 @@
     }
 
     .avatar-container {
-        left: calc(50% - 4rem);
-        right: calc(50% - 4rem);
-
+        position:absolute;
+        left: auto;
+        top: 4rem;
+        right: 4rem;
         width: 14rem;
         height: 14rem;
         border-radius: 50%;
         overflow: hidden;
         margin-right: 1rem;
+        background-color: red;
     }
     .edit-actions {
         margin-top: 10px;
@@ -585,8 +588,9 @@
 
     .actions {
         display: flex;
-        justify-content: right;
-        align-items: right;
+        flex-direction: column;
+        justify-content: flex-end;
+        align-items: flex-end;
         position: absolute;
         top: 0;
         right: 1rem;
@@ -641,9 +645,17 @@
         .actions {
             top: 0;
             right: 0;
+            flex-direction: row;
             justify-content: space-between;
             width: calc(100% - 2rem);
             gap: 2rem
+        }
+
+        .avatar-container {
+            top: 10rem;
+            right: 0;
+            width: 6rem;
+            height: 6rem;
         }
 
         .info-row2 {

@@ -21,6 +21,7 @@
     import Ramp from "$lib/containers/Ramp.svelte"
     import Transfer from "$lib/containers/Transfer.svelte"
     import TrendChart from "$lib/overlays/TrendChart.svelte"
+    import PriceSticker from '$lib/containers/PriceSticker.svelte';
 
 
     $: currentOverlayStateAssets = $overlayStateAssets;
@@ -78,7 +79,7 @@
                 {:else if name === 'chart2'}
                     <TrendChart />
                 {:else if name === 'info'}
-                    <Transfer />
+                    <PriceSticker />
                 {/if}
             </div>
         </div>
@@ -367,6 +368,8 @@
         .wallet-overlay {
             width: auto;
             height: calc(25% - 8rem);
+            justify-content: flex-start;
+            align-items: top;
             top: 4rem;
             left: 0;
             right: 0;
@@ -461,6 +464,86 @@
     }
 
     }
+    @media (max-width: 450px) {
+        .wallet-overlay {
+            width: auto;
+            height: calc(25% - 8rem);
+            top: 4rem;
+            left: 0;
+            right: 0;
+            bottom: auto;
+            font-size: 2rem;
+            border-radius: 2rem;
+            overflow: none;
 
+        }
+        .feed-overlay,  .trends-overlay {
+            width: calc(50% - 4rem);        
+            height: calc(12% - 2rem);
+            border-radius: 2rem;
+            left: auto;
+        right: auto;
+        top: auto;
+        bottom: 2.5rem;
+        font-size: 1rem;
+        overflow: none;
+    }
+    .feed-overlay {
+        left: 0;
+
+    }
+
+    .trends-overlay {
+        right: 0;
+
+    }
+
+    .deposit-overlay, .info-overlay {
+        width: calc(50% - 4rem);        
+        height: calc(12% - 2rem);
+        top: calc(25% - 1rem);
+        border-radius: 2rem;
+        bottom: auto;
+        left: auto;
+        right: auto;
+        font-size: 1rem;
+        overflow: none;
+        flex: 1;
+        
+    }
+
+
+    .chart2-overlay {
+        left: 0;
+        right: 0;
+        top: calc(40% - 2rem);
+        bottom: calc(22% - 2rem);
+        border-radius: 2rem;
+        height: auto;
+        width: auto;
+
+
+    }
+    .info-overlay {
+       bottom: auto;
+       right: 0;
+    }
+
+    .deposit-overlay.deposit-expanded,
+    .trends-overlay.trends-expanded,
+    .chart2-overlay.chart2-expanded,
+    .wallet-overlay.wallet-expanded,
+
+    .info-overlay.info-expanded {
+        height: auto;
+        top: 4rem;
+        left:0;
+        right: 0;
+        width: auto;
+        bottom: 4rem;
+        font-size: 1rem;
+    }
+
+    }
 </style>
 

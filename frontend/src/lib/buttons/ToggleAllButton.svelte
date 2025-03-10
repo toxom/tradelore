@@ -29,4 +29,10 @@
     }
     .active {
     }
+
+    @media (max-width: 768px) {
+        span.text {
+            display: none;
+        }
+    }
 </style>

@@ -100,7 +100,7 @@
     .container {
         display: flex;
         justify-content: center;
-        align-items: center;
+        align-items: flex-start;
         padding: 2rem;
     }
 

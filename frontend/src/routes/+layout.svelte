@@ -166,7 +166,7 @@
 
 	<header >
 		<span class='logo'>
-			<Compass size={40} />
+			<Compass/>
 			<h1>
                 {$t('nav.title')}
             </h1>
@@ -364,6 +364,7 @@
         align-items: center;
         gap: 1rem;
     }
+
 header {
     display: flex;
     flex-direction: row;
@@ -543,7 +544,8 @@ header {
     }
 
     @media (max-width: 768px) {
-        span.logo {
+        span.logo {                
+        display: none;
             h1 {
                 display: none;
             }

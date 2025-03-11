@@ -3,9 +3,10 @@ import type { RecordModel } from 'pocketbase';
 export interface Wallet {
   id: string;
   userId: string;
+  tokenId: string;
+  network: string;
   currency: string;
   balance: number;
-  address: string;
   created: string;
   updated: string;
 }

@@ -141,22 +141,19 @@
     <div class="tab-content">
         {#if activeTab === $t('nav.profileTabs.id')}
         <div class="column-content">
-            <div class="avatar-container">
-                {#if user.avatar}
-                    <img src={pb.getFileUrl(user, user.avatar)} alt="User avatar" class="avatar" />
-                {:else}
-                <img src={pb.getFileUrl(user, user.avatar)} alt="User avatar" class="avatar" />
-    
-                {/if}
-            </div>             
+
+         
             <div class="profile-info">
-                {#if editingFields.name || editingFields.firstName || editingFields.lastName}
-                <div class="edit-actions">
-                    <button on:click={saveChanges}> {$t('profile.save')}</button>
-                    <button on:click={cancelEdit}> {$t('profile.close')}</button>
-                </div>
-            {/if}
                 <div class="info-row2">
+                    <div class="avatar-container">
+                        {#if user.avatar}
+                            <img src={pb.getFileUrl(user, user.avatar)} alt="User avatar" class="avatar" />
+                        {:else}
+                        <img src={pb.getFileUrl(user, user.avatar)} alt="User avatar" class="avatar" />
+            
+                        {/if}
+                        
+                    </div>    
                     <div class="info-row">
                         <span class="label">{$t('forms.info.userName')}</span>
                         {#if editingFields.name}
@@ -165,6 +162,15 @@
                             <span class="edit" on:click={() => toggleEdit('name')}>{user.name || 'Not set'}</span>
                         {/if}
                     </div>  
+                </div>
+                {#if editingFields.name || editingFields.firstName || editingFields.lastName}
+                <div class="edit-actions">
+                    <button on:click={saveChanges}> {$t('profile.save')}</button>
+                    <button on:click={cancelEdit}> {$t('profile.close')}</button>
+                </div>
+            {/if}
+                <div class="info-row2">
+
                 <div class="info-row">
                     <span class="label">
                         <Mail/> {$t('forms.info.email')}
@@ -335,13 +341,14 @@
         left: 0;
         right: 0;
         bottom: auto;
+        z-index: 2;
+
         max-width: 100%;
         /* height: 100%; */
         /* background-color: rgba(0, 0, 0, 0.5); */
         display: flex;
         justify-content: flex-start;
         align-items: flex-end;
-        z-index: 9000;
         width: auto;
         display: flex;
         /* background-color: #131313; */
@@ -390,15 +397,16 @@
             rgba(70, 118, 114, 0.05) 85%,
             rgba(70, 118, 114, 0) 100%
             ); */
-        backdrop-filter: blur(40px);
-        border-bottom-left-radius: 4rem; 
+            border-bottom-left-radius: 4rem; 
         border-bottom-right-radius: 4rem;       
         border-bottom: 1px solid var(--tertiary-color);
         padding: 0;
         display: flex;
+        z-index: 9000;
+        backdrop-filter: blur(40px);
         flex-direction: column;
         position: fixed;
-        top: 0;
+        top: 4rem;
         width: 100%;
         height: 96vh;
         overflow: hidden;
@@ -445,12 +453,13 @@
     }
 
     .avatar-container {
-        position:absolute;
+        position: relative;
         left: auto;
-        top: 4rem;
-        right: 4rem;
-        width: 14rem;
-        height: 14rem;
+        top: 0;
+        right: 0;
+        left: 0;
+        width: auto;
+        height: 10rem;
         border-radius: 50%;
         overflow: hidden;
         margin-right: 1rem;
@@ -553,7 +562,7 @@
         display: flex;
         flex-direction: row;
         justify-content: center;
-        align-items: flex-start;
+        align-items: center;
         position: relative;
         margin: 0;
         left: 0;

@@ -1,46 +1,49 @@
-// walletStore.ts
-import { writable, get } from 'svelte/store';
 import { pb, currentUser } from '$lib/pocketbase';
+import { writable, get } from 'svelte/store';
 import type { Wallet } from 'types/walletTypes';
-
 
 export const wallets = writable<Wallet[]>([]);
 export const selectedWallet = writable<Wallet | null>(null);
 
 export async function fetchWallets() {
   const user = get(currentUser);
-  if (user) {
-    try {
-      const records = await pb.collection('wallets').getFullList<Wallet>({
-        filter: `userId = "${user.id}"`,
-      });
-      wallets.set(records);
-    } catch (error) {
-      console.error('Failed to fetch wallets:', error);
-    }
+  if (!user || !pb.authStore.isValid) {
+    console.error('User not authenticated');
+    return;
+  }
+  try {
+    const records = await pb.collection('wallets').getFullList<Wallet>({
+      filter: `userId = "${user.id}"`,
+    });
+    wallets.set(records);
+  } catch (error) {
+    console.error('Failed to fetch wallets:', error);
   }
 }
 
-export async function createWallet(currency: string, address: string) {
+export async function createWallet(currency: string, tokenId: string, network: string) {
   const user = get(currentUser);
-  if (user) {
-    try {
-      const record = await pb.collection('wallets').create<Wallet>({
-        userId: user.id,
-        currency,
-        address,
-        balance: 0,
-      });
-      wallets.update((current) => [...current, record]);
-      selectedWallet.set(record);
-      return record;
-    } catch (error) {
-      console.error('Failed to create wallet:', error);
-      return null;
-    }
+  if (!user || !pb.authStore.isValid) {
+    console.error('User not authenticated');
+    return null;
   }
-  return null;
+  try {
+    const record = await pb.collection('wallets').create<Wallet>({
+      userId: user.id,
+      currency,
+      tokenId,
+      network,
+      balance: 0,
+    });
+    wallets.update((current) => [...current, record]);
+    selectedWallet.set(record);
+    return record;
+  } catch (error) {
+    console.error('Failed to create wallet:', error);
+    return null;
+  }
 }
+
 
 export async function updateWallet(walletId: string, updates: Partial<Wallet>) {
   try {

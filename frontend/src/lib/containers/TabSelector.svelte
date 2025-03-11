@@ -40,6 +40,7 @@
   .tab-selector {
     display: flex;
     width: 100%;
+    backgdrop-filter: blur(40px);
     justify-content: center;
     position: sticky;
     top: 0;
@@ -56,7 +57,6 @@
     cursor: pointer;
     font-weight: 700;
     font-size: 1.25rem;
-    transition: all 0.2s ease;
     border-top: 2px solid transparent;
     border-left: 2px solid transparent;
     border-right: 2px solid transparent;

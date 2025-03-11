@@ -212,66 +212,6 @@ onMount(async () => {
 
     }
 
-    table {
-        margin-left: 1rem;
-        width: calc(100% - 2rem);
-        color: var(--text-color);
-        border-collapse: collapse;
-
-    }
-    tbody tr {
-                transition: 0.3s cubic-bezier(0.075, 0.82, 0.165, 1);
-                &:hover {
-                background:var(--bg-gradient-right);
-                color: var(--text-color);
-                font-size: 1rem;
-                cursor: pointer;
-
-            }
-        }
-    tr td {
-        justify-content: center;
-        align-items: center;
-        text-align: left;
-        
-    }
-    
-
-    th, td {
-        padding: 10px;
-        text-align: left;
-        // border-bottom: 1px solid var(--secondary-color);
-
-
-    }
-
-    th:nth-child(1), td:nth-child(1) {
-        display: flex;
-        width: 1rem;
-        height: 3rem;
-
-    }
-    th:nth-child(2), td:nth-child(2) {
-        word-wrap: break-word;
-        white-space: normal;
-        font-weight: 800;
-        width: fit-content;
-
-    }
-    th:nth-child(3), td:nth-child(3) {
-        word-wrap: break-word;
-        white-space: normal;
-        // border-right: 1px solid var(--primary-color);
-        font-style: italic;
-
-    }
-    th:nth-child(5), td:nth-child(5) {
-        width: 50%; 
-        word-wrap: break-word;
-        white-space: normal;
-
-    }
-
-
+  
 </style>
     

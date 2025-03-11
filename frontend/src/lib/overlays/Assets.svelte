@@ -1,5 +1,8 @@
 <script lang="ts">
     import { drag } from '$lib/actions/drag';
+    import { gsap } from 'gsap';
+    import { CustomEase } from 'gsap/CustomEase';
+
 	import Box from "@tabler/icons-svelte/icons/box";
     import { fly, fade, slide, scale } from 'svelte/transition';
     import { cubicIn, cubicOut } from 'svelte/easing';
@@ -22,7 +25,9 @@
     import Transfer from "$lib/containers/Transfer.svelte"
     import TrendChart from "$lib/overlays/TrendChart.svelte"
     import PriceSticker from '$lib/containers/PriceSticker.svelte';
+    import IcicleD3 from '$lib/containers/IcicleD3.svelte';
 
+    CustomEase.create("customEase", "0.075, 0.82, 0.165, 1");
 
     $: currentOverlayStateAssets = $overlayStateAssets;
 
@@ -75,7 +80,7 @@
                 {#if name === 'deposit'}
                     <Deposit />
                 {:else if name === 'trends'}
-                    <Withdraw />
+                    <IcicleD3 />
                 {:else if name === 'chart2'}
                     <TrendChart />
                 {:else if name === 'info'}
@@ -132,7 +137,10 @@
         bottom: auto;
         border-radius: 4rem;
         font-size: 2rem;
-        overflow: hidden;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scroll-behavior: smooth;
+        scrollbar-color: var(--primary-color) transparent;
 
     }
 
@@ -168,6 +176,8 @@
         height: calc(25% - 2rem);
         width: calc(15% - 4rem);
         left: 0;
+        display: flex;
+        justify-content: center;
         right: auto;
     }
 
@@ -175,9 +185,13 @@
         left: auto;
         right: 0;
         top: 48rem;
+        justify-content: center;
+        align-items: center;
+        box-sizing: border-box;
         bottom: 4rem;
         width: calc(50% - 4rem);
         height: auto;
+        overflow: hidden;
 
 
     }
@@ -200,6 +214,8 @@
 .info-overlay.info-expanded {
     width: auto;
     height: auto;
+    justify-content: center;
+    align-items: center;
     top: 4rem;
     left: 4rem;
     right: 4rem;
@@ -283,7 +299,7 @@
                 height: auto;
                 top: 4rem;
                 left:0;
-                right: 25%;
+                right: 0;
                 width: auto;
                 bottom: 8rem;
                 font-size: 1rem;
@@ -332,6 +348,10 @@
         right: 0;
         left: 50%;
         bottom: 4rem;
+        margin: 0;
+        padding: 0;
+        justify-content: flex-end;
+        align-items: flex-start;
 
     }
     .chart2-overlay {

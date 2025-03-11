@@ -1,4 +1,4 @@
-import { pb } from '$lib/pocketbase';
+import { pb, currentUser } from '$lib/pocketbase';
 import { get } from 'svelte/store';
 import type { Wallet, Token } from 'types/walletTypes';
 import {
@@ -37,11 +37,15 @@ export async function getAvailableTokens(): Promise<Token[]> {
 
 export async function getWalletForTokenAndNetwork(
   currency: string,
-  address: string
+  tokenId: string,
+  network: string
 ): Promise<Wallet | null> {
   await fetchWallets();
   const foundWallet = get(wallets).find(
-    (wallet) => wallet.currency === currency && wallet.address === address
+    (wallet) =>
+      wallet.currency === currency &&
+      wallet.tokenId === tokenId &&
+      wallet.network === network
   );
   if (foundWallet) {
     selectedWallet.set(foundWallet);
@@ -50,10 +54,10 @@ export async function getWalletForTokenAndNetwork(
   return null;
 }
 
-export async function addNewWallet(currency: string, address: string) {
-  const existingWallet = await getWalletForTokenAndNetwork(currency, address);
+export async function addNewWallet(currency: string, tokenId: string, network: string) {
+  const existingWallet = await getWalletForTokenAndNetwork(currency, tokenId, network);
   if (!existingWallet) {
-    return createWallet(currency, address);
+    return createWallet(currency, tokenId, network);
   }
   return existingWallet;
 }

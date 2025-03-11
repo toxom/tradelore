@@ -1,41 +1,60 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
-    import {
-        getAvailableTokens,
-        getWalletForTokenAndNetwork,
-        addNewWallet,
-        wallets,
-        selectedWallet,
-    } from 'clients/balanceClient';
-    import type { Token } from 'types/walletTypes';
-    import TokenPanel from '../admin/TokenPanel.svelte'
-    import PieChart from '$lib/containers/PieChart.svelte'
-    import {spring, tweened} from 'svelte/motion';
-    let percent = 0;
+  import { onMount } from 'svelte';
+  import { pb, currentUser } from '$lib/pocketbase'; 
+  import { get } from 'svelte/store';
+  import {
+    fetchTokens,
+    populateOrUpdateTokens,
+    handleAddToken,
+    handleEditToken,
+    handleUpdateToken,
+    errorMessage,
+    isEditing,
+    newToken,
+    editingToken,
+    tokens,
+  } from 'clients/tokenClient';
+  import {
+    getAvailableTokens,
+    getWalletForTokenAndNetwork,
+    addNewWallet,
+    wallets,
+    selectedWallet,
+    fetchWallets,
+  } from 'clients/balanceClient';
+  import type { Token, Wallet } from 'types/walletTypes';
+  import { spring, tweened } from 'svelte/motion';
+  import { ArrowBigDown, ArrowUpWideNarrow, WalletMinimal } from 'lucide-svelte';
 
-    let totalBalance = 12500.75; 
-    let portfolioGrowth = 8.5;
-    let recentActivity = [
-        { type: 'Buy', coin: 'BTC', amount: 0.25, date: '2023-10-01' },
-        { type: 'Sell', coin: 'ETH', amount: 1.5, date: '2023-10-02' },
-        { type: 'Buy', coin: 'LTC', amount: 10, date: '2023-10-03' },
-    ];
+  let percent = 0;
+  let expandedTokenIds: Record<string, boolean> = {};
+  let selectedCurrency: string = '';
+  let selectedNetwork: string = '';
+  let selectedTokenId: string = '';
+  let addressInput: string = '';
+  let loadingTokens = true;
+  let loading = true;
+  let error = '';
+  const store = tweened(0, { duration: 1000 });
+  $: store.set(percent);
 
-    let tokens: Token[] = [];
-    let expandedTokenIds: Record<string, boolean> = {};
-    let selectedCurrency: string = '';
-    let selectedNetwork: string = '';
-    let addressInput: string = '';
-
-    const store = tweened(0, {duration: 1000});
-	//const store = spring(0, {stiffness: 0.3, damping: 0.3});
-    $: store.set(percent);
+  let walletsForTokens = new Set<string>();
 
   function toggleTokenExpansion(tokenId: string) {
     expandedTokenIds = {
       ...expandedTokenIds,
       [tokenId]: !expandedTokenIds[tokenId],
     };
+  }
+
+  export function handleImageError(event: Event) {
+    const img = event.target as HTMLImageElement;
+    img.src = '/placeholder-coin.png';
+  }
+
+  export function getTokenIcon(tokenId: string): string {
+    const token = tokens.find((t) => t.tokenId === tokenId);
+    return token?.iconUrl || '/placeholder-coin.png';
   }
 
   function getUniqueTokenIds(tokens: Token[]): string[] {
@@ -46,146 +65,238 @@
     return tokens.filter((token) => token.tokenId === tokenId);
   }
 
-  async function handleCurrencySelect(currency: string) {
-    selectedCurrency = currency;
-    // Potentially load available networks based on the token here
-  }
-
-  async function handleNetworkSelect(network: string) {
-    selectedNetwork = network;
-  }
-
-  async function handleCreateWallet() {
-    if (selectedCurrency && addressInput) {
-      const wallet = await addNewWallet(selectedCurrency, addressInput);
+  async function handleAddWallet(token: Token) {
+    try {
+      const currency = token.ticker;
+      const tokenId = token.tokenId;
+      const network = token.network;
+      const wallet = await addNewWallet(currency, tokenId, network);
       if (wallet) {
-        console.log('Wallet created or loaded:', wallet);
+        walletsForTokens.add(tokenId);
+        console.log('Wallet added successfully:', wallet);
       }
+    } catch (error) {
+      console.error('Error adding wallet:', error);
     }
   }
+
   onMount(async () => {
-    tokens = await getAvailableTokens();
-  });
-
+  try {
+    loadingTokens = true;
+    await fetchWallets(); // Fetch wallets for the current user
+    get(wallets).forEach((wallet) => {
+      walletsForTokens.add(wallet.tokenId); // Add tokenId to the Set
+    });
+    console.log('Wallets loaded:', get(wallets));
+    console.log('walletsForTokens:', walletsForTokens);
+  } catch (e) {
+    error = e;
+    console.error('Error loading tokens or wallets:', e);
+  } finally {
+    loadingTokens = false;
+  }
+});
 </script>
-
-<PieChart     
-size={700} 
-percent={75} 
-bgColor="white" 
-fgColor="green" 
-/>
-<div class="basic-container">
-    <div class="metric">
-        <!-- <div class="label">Total Balance</div> -->
-        <div class="value">${totalBalance.toFixed(2)}</div>
-        <div class="value">{portfolioGrowth.toFixed(1)}%</div>
-
-        <!-- <div class="conversion">≈${totalBalance.toFixed(2)}</div> -->
-    </div>
-    <div class="metric">
-        <!-- <div class="label">Portfolio Growth</div> -->
-        <!-- <div class="conversion">≈${portfolioGrowth.toFixed(2)}</div> -->
-    </div>
-
-</div>
-<button class="basic-button">
-    Add Funds
-</button>
-
-
-<div class="recent-activity">
-    <h3>Recent Activity</h3>
-    <ul class="activity-list">
-        {#each recentActivity as activity}
-            <li class="activity-item">
-                <span class="type">{activity.type} {activity.coin}</span>
-                <span class="details">{activity.amount} {activity.coin} on {activity.date}</span>
-            </li>
-        {/each}
-    </ul>
-</div>
-<div>
-    <h2>Wallets</h2>
-    <ul>
+<div class="sticker-container">
+  {#if loadingTokens}
+    <div class="loading-container">
+      <div class="spinner"></div>
+    </div> 
+  {:else if tokens.length === 0}
+    <p>No tokens found. Check your API connection.</p>
+  {:else}
+    <div class="container">
       {#each getUniqueTokenIds(tokens) as tokenId (tokenId)}
-        <li>
-          <button on:click={() => toggleTokenExpansion(tokenId)}>
-            {getTokensByTokenId(tokenId)[0].name} ({getTokensByTokenId(tokenId)[0].ticker})
+        <div
+          class="card {walletsForTokens.has(tokenId) ? 'has-wallet' : ''}"
+          on:click={() => toggleTokenExpansion(tokenId)}
+        >
+          <div class="token-header">
+            <img 
+              src={getTokenIcon(tokenId)} 
+              class="token-icon"
+              on:error={handleImageError}
+            />
+            <div class="token-info">
+              <h3 class="token-ticker">
+                {getTokensByTokenId(tokenId)[0]?.ticker || 'N/A'}
+              </h3>
+              <p class="token-name">
+                {getTokensByTokenId(tokenId)[0]?.name || 'Unknown'}
+              </p>
+            </div>
             {#if expandedTokenIds[tokenId]}
-              (Collapse)
             {:else}
-              (Expand)
+              ...
             {/if}
-          </button>
+          </div>
           {#if expandedTokenIds[tokenId]}
-            <ul>
+            <div class="token-option-container">
               {#each getTokensByTokenId(tokenId) as token (token.id)}
-                <li>
-                  {token.name} - {token.network} - {token.contract_address}
-                </li>
+                <div
+                  class="token-options {walletsForTokens.has(tokenId) ? 'has-wallet' : ''}"
+                  on:click={() => handleAddWallet(token)}
+                >
+                  {token.network}
+                  {#if wallets.length > 0}
+                    {#each wallets.filter(wallet => wallet.userId === currentUser.id && wallet.tokenId === tokenId) as wallet (wallet.id)}
+                      <div class="wallet-balance">
+                        Balance: {wallet.balance}
+                      </div>
+                    {/each}
+                  {/if}
+                </div>
               {/each}
-            </ul>
+            </div>
           {/if}
-        </li>
+        </div>
       {/each}
-    </ul>
-  </div>
+    </div>
+  {/if}
+</div>
 
-  
 <style lang="scss">
     @use "src/styles/themes.scss" as *;
     * {
         font-family: var(--font-family);
     }
-    .basic-container {
-        display: flex;
-        flex-direction: column;
-        align-items: top;
-        position: absolute;
-        top: 21rem;
-        justify-content: center;
-        gap: 0;
-        left: 0;
-        margin-left: 0;
-        width: 100%;
-        height: auto;
-        margin-bottom: 1rem;
+    
+    .wallet-container {
+      gap: 0;
+
+      display: flex;
+      flex-direction: column;
+    }
+    .sticker-container {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: left;
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0;
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      margin-left: 0;
+      margin: 0;
+      padding: 0;
+      left: 0;
+      right: 0;
+      gap: 0.5rem;
+      width: auto;
+      transition: all 0.2s ease;
+
+      padding: 2rem;
 
     }
+    .card {
+      background: var(--bg-gradient-fade);
+      display: flex;
+      flex-direction: row;
+      justify-content: space-around;
+      align-items: flex-start;
+      width: 100%;
+      gap: 1rem;
+      height: 100%;
+      border-radius: 2rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      padding: 1rem;
+      transition: all 0.2s ease;
+      color: var(--text-color);
+    }
+    
+  .card:hover {
+	  transform: translateX(1rem);
+    align-items: center;
+    justify-content: flex-start;
 
-    .metric {
-        display: flex;
-        flex-direction: column;
-        width: auto;
-        height: 100%;
-        gap: 1rem;
-        margin-bottom: 0;
-        text-align: center;
-        justify-content: center;
-        align-items: center;
-        & .value {
-            font-size: 4rem;
-        font-weight: 600;
-        color: var(--tertiary-color);
-        }
-        & .label {
-            font-size: 2rem;
-            color: var(--text-color);
-          }
-        & .conversion {
-            font-size: 2rem;
-            color: var(--text-color);
-            font-style: italic;
-        }
+    font-size: 1rem;
+    cursor: pointer;
+    box-shadow: -50px -1px 50px 4px rgba(255, 255, 255, 0.9);
+    padding: 2rem;
+    gap: 2rem;
+    img {
+      transform: scale(1.5);
+      margin-right: 1rem;
+    }
+    p.token-name {
+      font-size: 2rem;
+    }
+    &.token-info {
+      gap: 2rem;
+    }
+
+  }
+
+  .token-header {
+	display: flex;
+	align-items: center;
+	margin-bottom: 0.5rem;
+  }
+
+  .token-option-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    justify-content: flex-start;
+    margin: 0;
+  }
+  .token-options {
+    background: var(--secondary-color);
+    color: var(--text-color);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem !important;
+    width: 22rem;
+    border-radius: 2rem;
+    padding: 1rem;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: var(--bg-gradient-left);
+      transform: translateX(1rem);
     }
 
 
+  }
 
-    .recent-activity {
-        margin-top: 5rem;
-    }
+  .overlay-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    font-size: 1.5rem;
+    margin: 0 auto;
+    line-height: 0.5;
 
+  }
+
+  .token-icon {
+	width: 2rem;
+	height: 2rem;
+	margin-right: 0.5rem;
+	border-radius: 50%;
+  }
+  
+  .token-ticker {
+	font-weight: bold;
+	margin: 0;
+  }
+  
+  .token-name {
+	font-size: 0.75rem;
+	color: #6b7280;
+	margin: 0;
+  }
+  
     .recent-activity h3 {
         font-size: 1.25rem;
         color: #333;
@@ -205,6 +316,10 @@ fgColor="green"
         border-bottom: 1px solid #eee;
     }
 
+    ul {
+      background-color: red;
+    }
+
     .activity-item:last-child {
         border-bottom: none;
     }
@@ -218,6 +333,31 @@ fgColor="green"
         color: #666;
     }
 
+    .grid {
+      display: grid;
+      gap: 3rem;
+      grid-template-columns: repeat(1, 1fr);
+
+    }
+  
+  @media (min-width: 640px) {
+    .grid {
+      grid-template-columns: repeat(2, 1fr);
+
+    }
+  }
+  
+  @media (min-width: 768px) {
+    .grid {
+      grid-template-columns: repeat(1, 1fr);
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    .grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
     @media (max-width: 1600px) {
         .metric {
             display: flex;
@@ -308,4 +448,40 @@ fgColor="green"
             }
         }
     }
+
+
+  
+
+    table {
+      margin-left: 0;
+      background-color: red;
+      width: auto;
+      color: var(--text-color);
+      border-collapse: collapse;
+
+    }
+  tbody tr {
+        transition: 0.3s cubic-bezier(0.075, 0.82, 0.165, 1);
+        &:hover {
+        background:var(--bg-gradient-right);
+        color: var(--text-color);
+        font-size: 1rem;
+        cursor: pointer;
+
+      }
+    }
+  tr td {
+    justify-content: center;
+    align-items: center;
+    text-align: left;
+    
+  }
+  th, td {
+    padding: 10px;
+    text-align: left;
+    // border-bottom: 1px solid var(--secondary-color);
+
+
+  }
+
 </style>

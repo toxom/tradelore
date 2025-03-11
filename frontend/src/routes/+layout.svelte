@@ -1,7 +1,8 @@
 <script lang="ts">
     import { onMount, createEventDispatcher, tick } from 'svelte';
     import { pb, currentUser } from '$lib/pocketbase';
-    import { fly, fade, slide } from 'svelte/transition';
+    import { fly, fade, slide, scale } from 'svelte/transition';
+    import { cubicOut } from 'svelte/easing';
     import { X, Calculator, Camera, Bell, MapPin, CircleX, LogIn, User, LogOut, MessageCircle, Filter, FilterX, Compass, ArrowBigUp, ArrowUp } from 'lucide-svelte';
 	import { Moon, Sun, Sunset, Sunrise, Focus, Bold, Gauge, Key, Bone } from 'lucide-svelte';
     import { Wallet, Landmark, CreditCard, BarChart, PieChart } from 'lucide-svelte';
@@ -34,6 +35,7 @@
 
 	const currentLang = $currentLanguage;
 	let showStyles = false;
+    let visible = true;
 	let currentStyle = '';
 	let showNotifications = false;
 	let showLanguageNotification = false;
@@ -52,6 +54,7 @@
     let showAuth = false;
     let showProfile = false;
     let dragDistance = 0; 
+    let isToggled = false;
 
 	const dispatch = createEventDispatcher();
 	const styles = [
@@ -66,6 +69,7 @@
 	];
 
     function toggleAuthOrProfile() {
+        isToggled = !isToggled;
         if ($currentUser) {
             showProfile = !showProfile;
             showAuth = false;
@@ -171,7 +175,7 @@
                 {$t('nav.title')}
             </h1>
 		</span>
-		<div class="nav-links" transition:fly={{ y: 50, duration: 300 }}>
+		<div class="nav-links" transition:fly={{ y: 20, duration: 0 }}>
             {#if $currentUser}
                 <!-- <ToggleAllButton type="assets" text= {$t('nav.wallet')} icon={Wallet} /> -->
                 <ToggleAllButton type="trade" text= {$t('nav.trade')} icon={BarChart} />
@@ -193,7 +197,10 @@
 				selectedValue={currentLang}
 				on:select={handleLanguageChange}
 			/>
-			<button class="nav-link" on:click={toggleAuthOrProfile} transition:fly={{ y: -200, duration: 300}}>
+			<button 
+                class="nav-link" 
+                on:click={toggleAuthOrProfile} 
+                transition:fly={{ y: -200, duration: 300}}>
 				{#if $currentUser}
 						<div class="avatar-container">
 							{#if $currentUser.avatar}
@@ -237,8 +244,20 @@
 	</div>
 	{/if}
 	{#if showProfile}
-	<div class="profile-overlay" on:click={handleOverlayClick} transition:fly={{ y: -200, duration: 300 }}>
-		<div class="profile-content" transition:fly={{ y: -200, duration: 300 }}>
+	<div class="profile-overlay" on:click={handleOverlayClick}>
+		<div class="profile-content" 
+        in:scale={{ 
+            start: 0.1,       
+            easing: cubicOut,
+            opacity: 0,
+        }}
+        out:scale={{ 
+            start: 0.1,       
+            easing: cubicOut, 
+            opacity: 0,
+            delay: 100,
+        }}
+        >
 			<button class="close-button" on:click={() => showProfile = false}>
 				<X size={24} />
 			</button>
@@ -313,7 +332,6 @@
     *  {
 		top: 0;
 		font-family:var(--font-family);
-        background: var(--bg-color);
     }
 
 	main {
@@ -374,12 +392,15 @@ header {
     // left: 50%; 
     // transform: translateX(-50%); 
     width: 100%; 
+    background: var(--bg-color);
+    backdrop-filter: blur(40px);
+
     justify-content: space-between;
     align-items: center;
     height: 4rem;
     transition: all 0.3s ease;
     user-select: none;
-    z-index: 2000;
+    z-index: 1;
 	border-bottom: 1px solid var(--secondary-color);
 	& h1 {
         font-size: 30px;
@@ -404,13 +425,11 @@ header {
 		align-items: center;
 		justify-content: center;
 		margin-right: 2rem;
-		background-color: transparent;
 	}
 	.nav-link {
         display: flex;
         gap: 8px;
         justify-content: center;
-		background: var(--primary-color);
 		color: var(--text-color);
         align-items: center;
         border-radius: 10px;
@@ -438,6 +457,7 @@ header {
         border-color: var(--primary-color);
         font-weight: bold;
     }
+
     footer {
 	  color: var(--text-color);
 	  text-align: center;
@@ -541,6 +561,10 @@ header {
     }
     span {
         background-color: transparent;
+    }
+
+    .profile-content {
+        transform-origin: top right;
     }
 
     @media (max-width: 768px) {

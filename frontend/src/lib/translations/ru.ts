@@ -24,6 +24,10 @@ export default {
 			admin: 'Администратор'
 		}
 	},
+	wallet: {
+		network: 'Выберите сеть',
+		deposit: 'Депозит',
+	},
 	forms: {
 		info: {
 			residence: 'Место жительства',

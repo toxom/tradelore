@@ -1,4 +1,27 @@
 <script lang="ts">
+      import { get } from 'svelte/store';
+      import { pb, currentUser } from '$lib/pocketbase';
+      import type { Wallet, Token} from 'types/walletTypes';
+      import {
+    fetchTokens,
+    populateOrUpdateTokens,
+    handleAddToken,
+    handleEditToken,
+    handleUpdateToken,
+    errorMessage,
+    isEditing,
+    newToken,
+    editingToken,
+    tokens,
+  } from 'clients/tokenClient';
+      import {
+        getAvailableTokens,
+        getWalletForTokenAndNetwork,
+        addNewWallet,
+        wallets,
+        selectedWallet,
+        fetchWallets,
+    } from 'clients/balanceClient';
     export let size = 300;
     export let bgColor = 'cornflowerblue';
     export let fgColor = 'orange';
@@ -8,17 +31,31 @@
         label: string;
         value: number;
         color: string;
+        tokenId: string;
+        ticker: string;
     }
 
-    const testData: PieSegment[] = [
-        { label: 'Segment 1', value: 30, color: '#FF6384' },
-        { label: 'Segment 2', value: 50, color: '#36A2EB' },
-        { label: 'Segment 3', value: 20, color: '#FFCE56' },
-        { label: 'Segment 4', value: 40, color: '#4BC0C0' },
-        { label: 'Segment 5', value: 60, color: '#9966FF' }
+    const tokenColors = [
+        '#FF6384', '#36A2EB', '#FFCE56', 
+        '#4BC0C0', '#9966FF', '#FF9F40',
+        '#8AC926', '#1982C4', '#6A4C93',
+        '#F94144', '#F3722C', '#577590'
     ];
-
+    let totalBalance = 12500.75; 
+    let portfolioGrowth = 8.5;
+    let pieData: PieSegment[] = [];
+    let isLoading = true;
     let hoveredSegment: number | null = null;
+
+    const testData: PieSegment[] = getUniqueTokenIds(tokens).map((tokenId, index) => {
+    const balance = getTotalBalanceForToken(tokenId);
+    return {
+        label: tokenId, 
+        value: balance,
+        color: tokenColors[index % tokenColors.length] 
+    };
+});
+
 
     $: viewBox = `0 0 ${size} ${size}`;
     $: radius = size / 2;
@@ -67,9 +104,44 @@
     function handleMouseLeave() {
         hoveredSegment = null;
     }
-</script>
 
+    function getUniqueTokenIds(tokens: Token[]): string[] {
+    return Array.from(new Set(tokens.map((token) => token.tokenId)));
+  }
+    function getTotalBalanceForToken(tokenId: string): number {
+    const userWallets = get(wallets).filter(
+        wallet => wallet.userId === get(currentUser).id && wallet.tokenId === tokenId
+    );
+
+    return userWallets.reduce((total, wallet) => {
+        const walletBalance = typeof wallet.balance === 'string' 
+            ? parseFloat(wallet.balance) || 0 
+            : wallet.balance || 0;
+        return total + walletBalance;
+    }, 0);
+}
+
+export function handleImageError(event: Event) {
+    const img = event.target as HTMLImageElement;
+    img.src = '/placeholder-coin.png';
+  }
+
+  export function getTokenIcon(tokenId: string): string {
+    const token = tokens.find((t) => t.tokenId === tokenId);
+    return token?.iconUrl || '/placeholder-coin.png';
+  }
+
+
+</script>
+<div class="basic-container">
+    <div class="metric">
+        <div class="value">${totalBalance.toFixed(2)}</div>
+        <div class="value">{portfolioGrowth.toFixed(1)}%</div>
+    </div>
+  </div>
+  
 <div class="container">
+    
     <svg 
         width={size} 
         height={size} 
@@ -84,6 +156,23 @@
                 on:mouseleave={handleMouseLeave}
                 class="pie-segment"
             />
+            <g transform={`translate(${segment.midX - 12}, ${segment.midY - 12})`}>
+                <image
+                    href={getTokenIcon(segment.tokenId)}
+                    width="24"
+                    height="24"
+                    class="icon"
+                    on:error={handleImageError}
+                />
+                <text
+                    x="12"
+                    y="100"
+                    class="balance-text"
+                >
+                    {segment.value.toFixed(6)}
+
+                </text>
+            </g>
         {/each}
         
         <circle 
@@ -114,5 +203,29 @@
     .pie-segment.hover {
         transform: scale(1);
         filter: brightness(1.2);
+    }
+
+    .basic-container {
+        display: flex;
+        flex-direction: column;
+        align-items: top;
+        position: absolute;
+        top: auto;
+        margin-top: 4rem;
+        justify-content: center;
+        gap: 0;
+        left:calc(50% - 6rem);
+        margin-left: 0;
+        border-radius: 50%;
+        background: var(--bg-gradient-fade);
+        width:12rem;
+        height: 12rem;
+        margin-bottom: 4rem;
+        border: 1px solid var(--tertiary-color);
+        transition: all 0.2s ease-in-out;
+        &:hover {
+            animation: scaleEffect 1.3s ease-in-out;
+        }
+
     }
 </style>

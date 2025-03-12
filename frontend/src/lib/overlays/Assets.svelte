@@ -2,7 +2,10 @@
     import { drag } from '$lib/actions/drag';
     import { gsap } from 'gsap';
     import { CustomEase } from 'gsap/CustomEase';
-
+    import { onMount } from 'svelte';
+  import { pb, currentUser } from '$lib/pocketbase'; 
+  import { get } from 'svelte/store';
+  import { t } from 'stores/translation.store';
 	import Box from "@tabler/icons-svelte/icons/box";
     import { fly, fade, slide, scale } from 'svelte/transition';
     import { cubicIn, cubicOut } from 'svelte/easing';
@@ -16,7 +19,31 @@
         handleMouseLeave,
         handleDragEnd
     } from "$lib/actions/toggling";
+    import {
+    fetchTokens,
+    populateOrUpdateTokens,
+    handleAddToken,
+    handleEditToken,
+    handleUpdateToken,
+    errorMessage,
+    isEditing,
+    newToken,
+    editingToken,
+    tokens,
+  } from 'clients/tokenClient';
+  import {
+    getAvailableTokens,
+    getWalletForTokenAndNetwork,
+    addNewWallet,
+    wallets,
+    selectedWallet,
+    fetchWallets,
+    
+  } from 'clients/balanceClient';
     import Wallet from "$lib/containers/Wallets.svelte"
+    import walletsForTokens from "$lib/containers/Wallets.svelte"
+    import loadingTokens from "$lib/containers/Wallets.svelte"
+
     import Deposit from "$lib/containers/Deposit.svelte"
     import TradingPairs from "$lib/overlays/TradingPairs.svelte"
     import TradingHistory from "$lib/overlays/TradingHistory.svelte"
@@ -26,6 +53,7 @@
     import TrendChart from "$lib/overlays/TrendChart.svelte"
     import PriceSticker from '$lib/containers/PriceSticker.svelte';
     import IcicleD3 from '$lib/containers/IcicleD3.svelte';
+
 
     CustomEase.create("customEase", "0.075, 0.82, 0.165, 1");
 
@@ -49,6 +77,20 @@
                 return { y: 250, duration: 300 };
         }
     }
+    onMount(async () => {
+  try {
+    await fetchWallets();
+    get(wallets).forEach((wallet) => {
+      walletsForTokens.add(wallet.tokenId); 
+    });
+    console.log('Wallets loaded:', get(wallets));
+    console.log('walletsForTokens:', walletsForTokens);
+  } catch (e) {
+    error = e;
+    console.error('Error loading tokens or wallets:', e);
+  } finally {
+  }
+});
 </script>
 
 {#each Object.entries(currentOverlayStateAssets) as [name, state]}

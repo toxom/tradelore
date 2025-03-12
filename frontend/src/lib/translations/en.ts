@@ -15,7 +15,7 @@ export default {
         notifications: 'Notifications',
 		login: 'Login',
 		signup: 'Sign Up',
-		wallet: 'Wallet',
+		wallet: 'Wallets',
 		trade: 'Trade',
 		profileTabs: {
 			id: 'Info',
@@ -23,6 +23,10 @@ export default {
 			security: 'Security',
 			admin: 'Admin'
 		},
+	},
+	wallet: {
+		network: 'Choose Network',
+		deposit: 'Deposit',
 	},
 	forms: {
 		info: {

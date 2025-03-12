@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { pb, currentUser } from '$lib/pocketbase'; 
   import { get } from 'svelte/store';
+  import { t } from 'stores/translation.store';
   import {
     fetchTokens,
     populateOrUpdateTokens,
@@ -24,7 +25,7 @@
   } from 'clients/balanceClient';
   import type { Token, Wallet } from 'types/walletTypes';
   import { spring, tweened } from 'svelte/motion';
-  import { ArrowBigDown, ArrowUpWideNarrow, WalletMinimal } from 'lucide-svelte';
+  import { ArrowBigDown, ArrowUpWideNarrow, BadgePlus, WalletMinimal, WalletMinimalIcon } from 'lucide-svelte';
 
   let percent = 0;
   let expandedTokenIds: Record<string, boolean> = {};
@@ -32,13 +33,13 @@
   let selectedNetwork: string = '';
   let selectedTokenId: string = '';
   let addressInput: string = '';
-  let loadingTokens = true;
+export let loadingTokens = true;
   let loading = true;
   let error = '';
   const store = tweened(0, { duration: 1000 });
   $: store.set(percent);
 
-  let walletsForTokens = new Set<string>();
+  export let walletsForTokens = new Set<string>();
 
   function toggleTokenExpansion(tokenId: string) {
     expandedTokenIds = {
@@ -65,6 +66,20 @@
     return tokens.filter((token) => token.tokenId === tokenId);
   }
 
+  function getTotalBalanceForToken(tokenId: string): number {
+    const userWallets = get(wallets).filter(
+      wallet => wallet.userId === get(currentUser).id && wallet.tokenId === tokenId
+    );
+    
+    return userWallets.reduce((total, wallet) => {
+      const walletBalance = typeof wallet.balance === 'string' 
+        ? parseFloat(wallet.balance) || 0 
+        : wallet.balance || 0;
+      
+      return total + walletBalance;
+    }, 0);
+  }
+
   async function handleAddWallet(token: Token) {
     try {
       const currency = token.ticker;
@@ -83,9 +98,9 @@
   onMount(async () => {
   try {
     loadingTokens = true;
-    await fetchWallets(); // Fetch wallets for the current user
+    await fetchWallets();
     get(wallets).forEach((wallet) => {
-      walletsForTokens.add(wallet.tokenId); // Add tokenId to the Set
+      walletsForTokens.add(wallet.tokenId); 
     });
     console.log('Wallets loaded:', get(wallets));
     console.log('walletsForTokens:', walletsForTokens);
@@ -98,56 +113,88 @@
 });
 </script>
 <div class="sticker-container">
+  <div class=sticker-header>
+  </div>
+
+
   {#if loadingTokens}
     <div class="loading-container">
       <div class="spinner"></div>
     </div> 
-  {:else if tokens.length === 0}
-    <p>No tokens found. Check your API connection.</p>
+  <!-- {:else if tokens.length === 0} -->
+    <!-- <p>No tokens found. Check your API connection.</p> -->
   {:else}
     <div class="container">
+      <h1> {$t('nav.wallet')}</h1>
+
       {#each getUniqueTokenIds(tokens) as tokenId (tokenId)}
         <div
           class="card {walletsForTokens.has(tokenId) ? 'has-wallet' : ''}"
-          on:click={() => toggleTokenExpansion(tokenId)}
         >
-          <div class="token-header">
-            <img 
-              src={getTokenIcon(tokenId)} 
-              class="token-icon"
-              on:error={handleImageError}
-            />
-            <div class="token-info">
-              <h3 class="token-ticker">
-                {getTokensByTokenId(tokenId)[0]?.ticker || 'N/A'}
-              </h3>
-              <p class="token-name">
-                {getTokensByTokenId(tokenId)[0]?.name || 'Unknown'}
-              </p>
-            </div>
+
+        <div class="token-header">
+          <img 
+            src={getTokenIcon(tokenId)} 
+            class="token-icon"
+            on:error={handleImageError}
+          />
+          <div class="token-info">
+            <h3 class="token-ticker">
+              {getTokensByTokenId(tokenId)[0]?.name || 'Unknown'}
+            </h3>
+            <p class="token-name">
+              {#if walletsForTokens.has(tokenId)}
+                {getTotalBalanceForToken(tokenId).toFixed(6)}
+              {/if}
+              {getTokensByTokenId(tokenId)[0]?.ticker || 'N/A'}
+
+            </p>
+
             {#if expandedTokenIds[tokenId]}
+            <p> {$t('wallet.network')}</p>
+  
             {:else}
-              ...
             {/if}
           </div>
+          
+
+          
+
+        </div>
+        <div class="btn-row">
+        <button class="toggle-button" on:click={() => toggleTokenExpansion(tokenId)}
+          >
+          <BadgePlus/>
+          <p>
+            {$t('wallet.deposit')}
+
+          </p>
+        </button>
+        </div>
           {#if expandedTokenIds[tokenId]}
-            <div class="token-option-container">
-              {#each getTokensByTokenId(tokenId) as token (token.id)}
-                <div
-                  class="token-options {walletsForTokens.has(tokenId) ? 'has-wallet' : ''}"
-                  on:click={() => handleAddWallet(token)}
-                >
-                  {token.network}
-                  {#if wallets.length > 0}
-                    {#each wallets.filter(wallet => wallet.userId === currentUser.id && wallet.tokenId === tokenId) as wallet (wallet.id)}
-                      <div class="wallet-balance">
-                        Balance: {wallet.balance}
-                      </div>
-                    {/each}
-                  {/if}
-                </div>
-              {/each}
-            </div>
+          <div class="token-option-container">
+
+            {#each getTokensByTokenId(tokenId) as token (token.id)}
+              <div
+                class="token-options {walletsForTokens.has(tokenId) ? 'has-wallet' : ''}"
+                on:click|stopPropagation={() => handleAddWallet(token)}
+              >
+                <div class="network-name">{token.network}</div>
+                
+                {#if walletsForTokens.has(tokenId)}
+                  {#each get(wallets).filter(wallet => 
+                    wallet.userId === get(currentUser).id && 
+                    wallet.tokenId === tokenId && 
+                    wallet.network === token.network
+                  ) as wallet (wallet.id)}
+                    <div class="wallet-balance">
+                      Balance: {wallet.balance || '0'}
+                    </div>
+                  {/each}
+                {/if}
+              </div>
+            {/each}
+          </div>
           {/if}
         </div>
       {/each}
@@ -166,41 +213,83 @@
 
       display: flex;
       flex-direction: column;
+      justify-content: flex-start;
     }
+
     .sticker-container {
-      position: relative;
       display: flex;
-      flex-direction: column;
-      align-items: left;
-      width: 100%;
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0;
-    }
-    .container {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      margin-left: 0;
-      margin: 0;
-      padding: 0;
+      top: 0;
       left: 0;
       right: 0;
-      gap: 0.5rem;
-      width: auto;
-      transition: all 0.2s ease;
+      bottom: 0;
+      gap: 0;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      width: 100vw;
+      margin-top: 2rem;
+      margin-left: 0;
+      margin-right: 0;
+      margin-bottom: 0;
+      padding: 0;
+      height: 80vh;
 
+
+    }
+    .container {
+      display: grid;
+
+      grid-template-columns: repeat( auto-fill, minmax(300px, 1fr) );
+      gap: 4rem;
       padding: 2rem;
+      height: 100vw;
+      margin-top: auto;
+      width: 100%;
+      transition: all 0.2s ease;
+      h1 {
+        color: var(--text-color);
+        backdrop-filter: blur(6px);
+      }
+    }
 
+    .btn-row {
+      width: 100%;
+      height: auto;
+      display: flex;
+      justify-content: flex-start;
+      align-items: flex-end;
+    }
+    .toggle-button {
+      transition: all 0.2s ease;
+      width: auto;
+      position: relative;
+      width: auto;
+      height: auto;
+      padding: 1rem;
+      &:hover {
+        transition: all 0.2s ease;
+        width: auto;
+        background: var(--text-color);
+        color: var(--tertiary-color);
+        padding: 1rem;
+
+        p {
+          display: flex;
+          color: var(--tertiary-color);
+        }
+      }
+      p {
+        display: none;
+
+      }
     }
     .card {
       background: var(--bg-gradient-fade);
       display: flex;
-      flex-direction: row;
+      flex-direction: column;
       justify-content: space-around;
-      align-items: flex-start;
-      width: 100%;
+      align-items: center;
+      width: auto;
       gap: 1rem;
       height: 100%;
       border-radius: 2rem;
@@ -208,18 +297,26 @@
       padding: 1rem;
       transition: all 0.2s ease;
       color: var(--text-color);
+
+      p.token-name {
+        font-size: 1.5rem;
+      }
+      &.token-info {
+        gap: 2rem;
+      }
     }
     
   .card:hover {
-	  transform: translateX(1rem);
-    align-items: center;
+    align-items:center;
     justify-content: flex-start;
-
+    width: calc(100% - 6rem);
     font-size: 1rem;
     cursor: pointer;
-    box-shadow: -50px -1px 50px 4px rgba(255, 255, 255, 0.9);
+    background: transparent;
+    // box-shadow: -50px -1px 50px 4px rgba(255, 255, 255, 0.2);
     padding: 2rem;
     gap: 2rem;
+    z-index: 1;
     img {
       transform: scale(1.5);
       margin-right: 1rem;
@@ -235,28 +332,35 @@
 
   .token-header {
 	display: flex;
-	align-items: center;
-	margin-bottom: 0.5rem;
+  flex-direction: row;
+	align-items: flex-start;
+  gap: 1rem;
+  justify-content: flex-start;
+	// margin-bottom: 0.5rem;
   }
 
   .token-option-container {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    justify-content: flex-start;
-    margin: 0;
+    // display: flex;
+    // flex-direction: column;
+    // gap: 1rem;
+    // justify-content: flex-start;
+    // margin: 0;
+    display: grid;
+      gap: 1rem;
+      grid-template-columns: repeat(2, 1fr);
+
   }
   .token-options {
-    background: var(--secondary-color);
+    background: var(--primary-color);
     color: var(--text-color);
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     gap: 1rem !important;
-    width: 22rem;
+    width: auto;
     border-radius: 2rem;
-    padding: 1rem;
+    padding: 2rem;
     transition: all 0.2s ease;
 
     &:hover {
@@ -266,6 +370,8 @@
 
 
   }
+
+
 
   .overlay-header {
     display: flex;
@@ -280,14 +386,15 @@
   }
 
   .token-icon {
-	width: 2rem;
-	height: 2rem;
+	width: auto;
+	height: 3rem;
 	margin-right: 0.5rem;
 	border-radius: 50%;
   }
   
   .token-ticker {
 	font-weight: bold;
+  font-size: calc(1rem + 1vmin);
 	margin: 0;
   }
   
@@ -359,6 +466,22 @@
     }
   }
     @media (max-width: 1600px) {
+
+      .sticker-container {
+        margin-top: 0;
+      }
+      .container {
+        height: 100%;
+        margin-top: 0;
+
+      }
+
+        .token-option-container {
+
+          display: grid;
+          gap: 1rem;
+          grid-template-columns: repeat(2, 1fr);
+        }
         .metric {
             display: flex;
             flex-direction: column;
@@ -391,6 +514,75 @@
             height: 100%;
             margin-bottom: rem;
         }
+
+
+
+        .metric {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: auto;
+            gap: 0;
+            margin: 0;
+            text-align: center;
+            & .value {
+                font-size: 2rem;
+            font-weight: 600;
+            color: #28a745; /* Green for positive values */
+            }
+            & .label {
+                font-size: 1.5rem;
+                color: #666;
+            }
+            & .conversion {
+                font-size: 1.5rem;
+                color: #666;
+                font-style: italic;
+            }
+        }
+
+        .container {
+          grid-template-columns: repeat(1, 1fr);
+          gap: 4rem;
+          background: transparent;
+
+
+
+        }
+        h1 {
+            text-align: center;
+            margin: 0;
+            margin-top: 0;
+            padding: 0.5rem;
+            position: absolute;
+            background: transparent;
+            backdrop-filter: blur(100px);
+            top: 0;
+            left: 0;
+            right: 0;
+          }
+        .token-option-container {
+        display: grid;
+        gap: 0.5rem;
+        grid-template-columns: repeat(2, 1fr);
+        width: auto;
+        padding: 0;
+        margin: 0;
+        }
+        .token-options {
+        }
+      .card {
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-start;
+      }
+
+      .card:hover {
+        box-shadow: none;
+                align-items: center;
+
+        background: transparent;
+      }
         .metric {
             display: flex;
             flex-direction: column;
@@ -414,74 +606,36 @@
             }
         }
     }
+    @media (max-width: 768px) {
+
+      .container {
+        width: calc(100% - 4rem);
+        align-items: center;
+        margin-left: 2rem;
+      }
+
+      .sticker-container {
+        margin: 0;
+        padding: 0;
+        align-items: center;
+      }
+      .token-option-container {
+        display: grid;
+        gap: 0.5rem;
+        grid-template-columns: repeat( auto-fill, minmax(240px, 1fr) );
+        width: auto;
+        padding: 0;
+        margin: 0;
+        }
+        .token-options {
+          
+        }
+    }
+
     @media (max-width: 1000px) {
-        .basic-container {
-            display: flex;
-            flex-direction: column;
-            align-items: top;
-            gap: 1rem;
-            width: 100%;
-            height: auto;
-            margin-bottom: rem;
-        }
-        .metric {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-            height: auto;
-            gap: 0;
-            margin: 0;
-            text-align: center;
-            & .value {
-                font-size: 2rem;
-            font-weight: 600;
-            color: #28a745; /* Green for positive values */
-            }
-            & .label {
-                font-size: 1.5rem;
-                color: #666;
-            }
-            & .conversion {
-                font-size: 1.5rem;
-                color: #666;
-                font-style: italic;
-            }
-        }
+
     }
 
 
   
-
-    table {
-      margin-left: 0;
-      background-color: red;
-      width: auto;
-      color: var(--text-color);
-      border-collapse: collapse;
-
-    }
-  tbody tr {
-        transition: 0.3s cubic-bezier(0.075, 0.82, 0.165, 1);
-        &:hover {
-        background:var(--bg-gradient-right);
-        color: var(--text-color);
-        font-size: 1rem;
-        cursor: pointer;
-
-      }
-    }
-  tr td {
-    justify-content: center;
-    align-items: center;
-    text-align: left;
-    
-  }
-  th, td {
-    padding: 10px;
-    text-align: left;
-    // border-bottom: 1px solid var(--secondary-color);
-
-
-  }
-
 </style>

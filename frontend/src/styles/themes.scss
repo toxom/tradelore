@@ -13,7 +13,7 @@
 // Theme variables
 $themes: (
 	light: (
-		bg-color: #ffffff,
+		bg-color: #afe2ff,
 		bg-gradient: linear-gradient(to bottom, #ffffff, #9cc5e47f),
 		bg-gradient-r: linear-gradient(to top, #ffffff, #54aaeb7f),
 		bg-gradient-left: linear-gradient(to left, #ffffff, #54aaeb7f),
@@ -478,6 +478,30 @@ th:nth-child(5), td:nth-child(5) {
 	max-width: 1200px;
 	margin: 0 auto;
 	padding: 0;
+  }
+
+  .sticker-header {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+
+	height: auto;
+	padding: 0;
+	color: var(--text-color);
+
+	h1 {
+	  font-size: 1,5rem;
+		margin-bottom: 0;
+	  color: var(--text-color);
+	}
+
+	p {
+		font-size: 1rem;
+		margin: 0;
+		text-align: left;
+		text-justify: auto;
+	}
   }
   
   .title {

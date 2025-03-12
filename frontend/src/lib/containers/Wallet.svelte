@@ -1,6 +1,5 @@
 <script lang="ts">
     // Sample data for user progress
-    let totalBalance = 12500.75; // Total balance in USD
     let portfolioGrowth = 8.5; // Portfolio growth in percentage
     let recentActivity = [
         { type: 'Buy', coin: 'BTC', amount: 0.25, date: '2023-10-01' },

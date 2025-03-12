@@ -62,4 +62,18 @@ export async function addNewWallet(currency: string, tokenId: string, network: s
   return existingWallet;
 }
 
+function getTotalBalanceForToken(tokenId: string): number {
+  const userWallets = get(wallets).filter(
+    wallet => wallet.userId === get(currentUser).id && wallet.tokenId === tokenId
+  );
+  
+  return userWallets.reduce((total, wallet) => {
+    const walletBalance = typeof wallet.balance === 'string' 
+      ? parseFloat(wallet.balance) || 0 
+      : wallet.balance || 0;
+    
+    return total + walletBalance;
+  }, 0);
+}
+
 export { wallets, selectedWallet, fetchWallets, createWallet, updateWallet, deleteWallet };

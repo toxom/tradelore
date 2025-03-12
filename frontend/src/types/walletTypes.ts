@@ -6,9 +6,11 @@ export interface Wallet {
   tokenId: string;
   network: string;
   currency: string;
-  balance: number;
+  balance: number | string;
   created: string;
   updated: string;
+  price?: number; 
+
 }
 
 export interface Token {

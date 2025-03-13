@@ -34,6 +34,7 @@ export async function createWallet(currency: string, tokenId: string, network: s
       tokenId,
       network,
       balance: 0,
+      agentSpendLimit: 0,
     });
     wallets.update((current) => [...current, record]);
     selectedWallet.set(record);

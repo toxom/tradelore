@@ -26,7 +26,16 @@ export default {
 	},
 	wallet: {
 		network: 'Choose Network',
-		deposit: 'Deposit',
+		deposit: 'Send & Receive',
+	},
+	agent: {
+		agents: 'Agents',
+		buttonForm: 'Create New Agent',
+		buttonCreate: 'Create Agent',
+		name: 'Agent Name',
+		description: 'Description',
+		limit: 'Token Usage Limit',
+		warning: 'Are you sure you want to delete this agent?'
 	},
 	forms: {
 		info: {

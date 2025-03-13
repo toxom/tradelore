@@ -12,6 +12,7 @@ export interface TokenPrice {
 }
 
 export let errorMessage = '';
+
 export let tokens: Token[] = [];
 export let newToken: Token = {
     id: '',

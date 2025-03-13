@@ -121,17 +121,18 @@
                     required
                 />
                 <div class="button-group">
-                    <button class="auth" on:click={signUp}>
-                        <span>
-                            <UserPlus />
-                            Sign Up</span>
-                    </button>
                     <button class="auth" on:click={login}>
                         <span>
                             <LogIn />
                             Login
                         </span>
                     </button>
+                    <button class="auth" on:click={signUp}>
+                        <span>
+                            <UserPlus />
+                            Sign Up</span>
+                    </button>
+
                 </div>
             </form>
             <span class="terms">
@@ -305,6 +306,7 @@
             width: 100%;
             align-items: center;
             justify-content: center;
+            background: var(--bg-gradient-fade);
             font-size: 1.5rem;
             padding: 1rem;
             transition: all 0.3s ease;

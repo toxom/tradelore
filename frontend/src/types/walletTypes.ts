@@ -7,6 +7,8 @@ export interface Wallet {
   network: string;
   currency: string;
   balance: number | string;
+  agentSpendLimit: number | string;
+  agentId: string[];
   created: string;
   updated: string;
   price?: number; 

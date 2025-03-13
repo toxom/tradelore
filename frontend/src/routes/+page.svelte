@@ -50,7 +50,7 @@
 </script>
 
 
-<!-- {#if $currentUser} -->
+{#if $currentUser}
 
 <div class="dashboard">
     <Assets/>
@@ -107,10 +107,10 @@
     {/if}
 {/each}
 </div>
-<!-- {:else} -->
+{:else}
 
-<!-- <Landing/> -->
-<!-- {/if} -->
+<Landing/>
+{/if}
 
 <style lang="scss">
     @use "src/styles/themes.scss" as *;

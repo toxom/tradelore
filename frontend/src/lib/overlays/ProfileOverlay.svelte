@@ -5,7 +5,7 @@
     import { drag } from '$lib/actions/drag';
     import { t } from 'stores/translation.store';
     import { pb } from '$lib/pocketbase';
-    import { Atom, BadgeCheck, Camera, Currency, Edit, Globe, History, LogOutIcon, Mail, MapPinned, SquareUserRound, UserCheck2Icon, X } from 'lucide-svelte';
+    import { ArrowBigUp, Atom, BadgeCheck, Camera, Currency, Edit, Globe, History, LogOutIcon, Mail, MapPinned, SquareUserRound, UserCheck2Icon, X } from 'lucide-svelte';
     import { UserRound, Settings, Lock, ShieldAlert } from 'lucide-svelte';
 
     import { currentUser } from '$lib/pocketbase';
@@ -109,7 +109,7 @@
     >
     <div class="actions">
         <button class="close-button" on:click={onClose}>
-            <X />
+            <LogOutIcon />
         </button>
         <button class="logout-button" on:click={logout} transition:fade={{ duration: 300 }}>
             <LogOutIcon />

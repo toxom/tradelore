@@ -237,7 +237,7 @@
 	<div class="auth-overlay" on:click={handleOverlayClick}  transition:fly={{ y: -200, duration: 300}} >
 		<div class="auth-content" transition:fly={{y: 200, duration: 300}}>
 			<button class="close-button" transition:fly={{ y: -200, duration: 300}} on:click={() => showAuth = false}>
-				<ArrowUp />
+				<ArrowUp  size={40} />
 			</button>
 			<Auth on:success={handleAuthSuccess} />
 		</div>
@@ -316,6 +316,8 @@
 {/if}
 
   <style lang="scss">
+        @use "src/styles/themes.scss" as *;
+
     /* :global(.loading-spinner) {
         position: fixed;
         top: 0;
@@ -333,7 +335,14 @@
 		top: 0;
 		font-family:var(--font-family);
     }
-
+    button.close-button {
+        background: transparent;
+        border: none;
+        color: var(--text-color);
+        width: 4rem;
+        height: 4rem;
+        display: flex;
+    }
 	main {
         background: var(--bg-gradient);
 		margin: 0;
@@ -395,7 +404,7 @@ header {
     background: var(--bg-color);
     backdrop-filter: blur(40px);
 
-    justify-content: space-between;
+    justify-content: space-around;
     align-items: center;
     height: 4rem;
     transition: all 0.3s ease;

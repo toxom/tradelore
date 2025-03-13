@@ -53,7 +53,7 @@
     import TrendChart from "$lib/overlays/TrendChart.svelte"
     import PriceSticker from '$lib/containers/PriceSticker.svelte';
     import IcicleD3 from '$lib/containers/IcicleD3.svelte';
-
+    import Agents from '$lib/overlays/Agents.svelte'
 
     CustomEase.create("customEase", "0.075, 0.82, 0.165, 1");
 
@@ -77,20 +77,17 @@
                 return { y: 250, duration: 300 };
         }
     }
-    onMount(async () => {
-  try {
-    await fetchWallets();
-    get(wallets).forEach((wallet) => {
-      walletsForTokens.add(wallet.tokenId); 
-    });
-    console.log('Wallets loaded:', get(wallets));
-    console.log('walletsForTokens:', walletsForTokens);
-  } catch (e) {
-    error = e;
-    console.error('Error loading tokens or wallets:', e);
-  } finally {
-  }
-});
+// onMount(async () => {
+//     if (get(currentUser)) { 
+//         try {
+//             await fetchWallets();
+//             await fetchTokens();
+//             console.log('Wallets and tokens loaded:', get(wallets), get(tokens));
+//         } catch (e) {
+//             console.error('Error loading wallets or tokens:', e);
+//         }
+//     }
+// });
 </script>
 
 {#each Object.entries(currentOverlayStateAssets) as [name, state]}
@@ -146,7 +143,7 @@
             {#if name === 'wallet'}
                 <Wallet/>
             {:else if name === 'feed'}
-                <TradingPairs />
+                <Agents />
             {/if}
         </div>
     {/if}
@@ -194,7 +191,8 @@
         right: auto;
         bottom: 4rem;
         font-size: 2rem;
-        overflow: none;
+        overflow: hidden;
+        
 
     }
 

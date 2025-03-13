@@ -28,6 +28,15 @@ export default {
 		network: 'Выберите сеть',
 		deposit: 'Депозит',
 	},
+	agent: {
+		agents: 'Агенты',
+		buttonForm: 'Создать нового агента',
+		buttonCreate: 'Создать агента',
+		name: 'Имя агента',
+		description: 'Описание',
+		limit: 'Лимит использования токена',
+		warning: 'Вы уверены, что хотите удалить этого агента?'
+	},
 	forms: {
 		info: {
 			residence: 'Место жительства',

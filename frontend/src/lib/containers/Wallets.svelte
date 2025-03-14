@@ -32,7 +32,6 @@
   let openCardContentType = null; // 'token' or 'agent'
 
   export let loadingTokens = true;
-  export let loadingAgents = true;
 
   let loading = true;
   let error = '';
@@ -296,39 +295,34 @@ async function handleUpdateSpendLimit(walletId: string, agentSpendLimit: number)
 onMount(async () => {
   try {
     loadingTokens = true;
-    fetchAgents();
     
+    // Make these awaits sequential to ensure proper loading order
+    await fetchAgents();
     await fetchWallets();
-    console.log('Wallets fetched:', get(wallets));
     
-    // Clear and re-populate walletsForTokens
+    // After all data is loaded, then update UI state
     walletsForTokens = new Set<string>();
     get(wallets).forEach((wallet) => {
-      walletsForTokens.add(wallet.tokenId); 
-      console.log(`Added token ${wallet.tokenId} to walletsForTokens`);
+      walletsForTokens.add(wallet.tokenId);
     });
-
-    // Initialize expandedAgentStates
+    
+    // This should happen after wallets are loaded
+    await fetchAssociatedAgents();
+    
+    // Initialize other state after data is available
     getUniqueTokenIds(tokens).forEach((tokenId) => {
       expandedAgentStates[tokenId] = false;
     });
+    
     agentSpendLimitInputs = {};
-  get(wallets).forEach(wallet => {
-    agentSpendLimitInputs[wallet.id] = wallet.agentSpendLimit || 0;
-  });
-
-    // Fetch agent-wallet associations
-    console.log('About to fetch agent associations');
-    await fetchAssociatedAgents();
-    console.log('Completed fetching agent associations');
-
-    console.log('Wallets loaded:', get(wallets));
-    console.log('walletsForTokens:', Array.from(walletsForTokens));
-    console.log('walletAgentsMap:', walletAgentsMap);
+    get(wallets).forEach(wallet => {
+      agentSpendLimitInputs[wallet.id] = wallet.agentSpendLimit || 0;
+    });
   } catch (e) {
     error = e;
     console.error('Error loading tokens or wallets:', e);
   } finally {
+    // Only set this false when everything is truly loaded
     loadingTokens = false;
   }
 });
@@ -697,22 +691,15 @@ onMount(async () => {
     }
     
   .card:hover {
-    align-items:center;
-    justify-content: flex-start;
-    width: calc(100% - 6rem);
     font-size: 1rem;
     cursor: pointer;
-    background: transparent;
-    // box-shadow: -50px -1px 50px 4px rgba(255, 255, 255, 0.2);
+    box-shadow: 0px 0px 20px 4px rgba(255, 255, 255, 0.2);
     // padding: 2rem;
-    gap: 2rem;
     z-index: 1;
     img {
       // transform: scale(1.5);
-      margin-right: 1rem;
     }
     p.token-name {
-      font-size: 2rem;
     }
     &.token-info {
       gap: 2rem;
@@ -721,7 +708,7 @@ onMount(async () => {
       transition: all 0.2s ease;
       width: auto;
       position: relative;
-      background: var(--bg-gradient-fade);
+      // background: var(--bg-gradient-fade);
       width: auto;
       height: 3rem;
       // padding: 1rem;

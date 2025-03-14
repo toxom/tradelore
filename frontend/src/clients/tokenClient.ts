@@ -98,6 +98,34 @@ export async function fetchTokens() {
         errorMessage = 'Failed to fetch tokens. Check your permissions.';
     }
 }
+export async function fetchTokenParents() {
+  let uniqueTokens: Token[] = [];
+  try {
+    const allTokens = await pb.collection('tokens').getFullList<Token>({
+      headers: {
+        Authorization: pb.authStore.token,
+      },
+    });
+    
+    // Create a Map to store unique tokens based on tokenId
+    const tokenMap = new Map<string, Token>();
+    
+    // Populate the map with unique tokens
+    allTokens.forEach(token => {
+      if (!tokenMap.has(token.tokenId)) {
+        tokenMap.set(token.tokenId, token);
+      }
+    });
+    
+    // Convert map values back to array
+    uniqueTokens = Array.from(tokenMap.values());
+    
+    return uniqueTokens;
+  } catch (error) {
+    console.error('Failed to fetch unique tokens:', error);
+    throw new Error('Failed to fetch unique tokens. Check your permissions.');
+  }
+}
 
 export async function fetchTokenData(tokenId: string): Promise<Token[]> {
     try {

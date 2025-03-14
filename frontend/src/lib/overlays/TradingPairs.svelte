@@ -252,9 +252,6 @@
             }
 
             & tbody {
-                // background: var(--primary-color);
-
-
             }
 
 
@@ -311,7 +308,6 @@
                 font-weight: 200;
                 height: 3rem;
                 padding: 0.5rem;
-        background: var(--secondary-color);
                 // border-bottom: 1px solid var(--secondary-color);
             }
         }

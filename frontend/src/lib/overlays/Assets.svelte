@@ -121,7 +121,7 @@
                 {:else if name === 'trends'}
                     <IcicleD3 />
                 {:else if name === 'chart2'}
-                    <TrendChart />
+                    <!-- <TrendChart /> -->
                 {:else if name === 'info'}
                     <PriceSticker />
                 {/if}

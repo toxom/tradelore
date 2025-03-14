@@ -25,9 +25,11 @@
         handleCurrencyChange,
         handleTimezoneChange
     } from 'clients/preferenceClient'
-    import TokenPanel from '../admin/TokenPanel.svelte'
     import TabSelector from '$lib/containers/TabSelector.svelte';
-    import WalletForm from '$lib/overlays/WalletForm.svelte';
+    import TokenPanel from '../admin/TokenPanel.svelte'
+    import WalletForm from '$lib/admin/WalletForm.svelte';
+    import PairManagement from '$lib/admin/PairManagement.svelte';
+
     import Security from '$lib/auth/Security.svelte';
     export let user: any;
     export let onClose: () => void;
@@ -47,6 +49,7 @@
     const tabIcons = [UserRound, Settings, Lock, ShieldAlert];
 
     let activeTab = $t('nav.profileTabs.id');
+    let adminActiveTab = $t('admin.tabs.wallets'); 
     let isEditing = false;
     let editedUser = user ? { ...user } : {} as Partial<User>; 
     let originalUser = { ...user };
@@ -98,6 +101,7 @@
             console.error('Logout error:', err);
         }
     }
+    
 
 
 </script>
@@ -282,16 +286,32 @@
             </div>  
         </div>
 
-        {:else if activeTab === $t('nav.profileTabs.preferences')}
-        <div class="column-content">
-             
-            </div>   
-        {:else if activeTab === $t('nav.profileTabs.security')}
-        <Security/>
         {:else if activeTab === $t('nav.profileTabs.admin')}
-        <WalletForm />
-
-        <TokenPanel />
+        <div class="admin-container">
+            <TabSelector
+                tabs={[
+                    $t('admin.tabs.wallets'),
+                    $t('admin.tabs.tokens'),
+                    $t('admin.tabs.pairs')
+                ]}
+                tabIcons={[Currency, Atom, Settings]}
+                bind:activeTab={adminActiveTab}
+                on:tabChange={(e) => { 
+                    adminActiveTab = e.detail.tab; 
+                    console.log('Active admin tab:', adminActiveTab); 
+                }}
+            />
+            
+            <div class="admin-tab-content">
+                {#if adminActiveTab === $t('admin.tabs.wallets')}
+                    <WalletForm />
+                {:else if adminActiveTab === $t('admin.tabs.tokens')}
+                    <TokenPanel />
+                {:else if adminActiveTab === $t('admin.tabs.pairs')}
+                    <PairManagement />
+                {/if}
+            </div>
+        </div>
 
         {/if}
     </div>
@@ -402,7 +422,7 @@
         border-bottom: 1px solid var(--tertiary-color);
         padding: 0;
         display: flex;
-        z-index: 9000;
+        z-index: 4;
         backdrop-filter: blur(40px);
         flex-direction: column;
         position: fixed;

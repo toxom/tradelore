@@ -12,6 +12,7 @@
 	import OrderForm from '$lib/overlays/OrderForm.svelte';
 	import OrderBook from '$lib/overlays/OrderBook.svelte';
 	import TradingPairs from '$lib/overlays/TradingPairs.svelte';
+    import PairSelector from '$lib/overlays/PairSelector.svelte';
 	import TradingHistory from '$lib/overlays/TradingHistory.svelte';
 	import PriceChart from '$lib/overlays/PriceChart.svelte';
     import Assets from '$lib/overlays/Assets.svelte';
@@ -83,7 +84,9 @@
             }}
         >
             {#if name === 'pairs'}
-                <TradingPairs/>
+                <!-- <TradingPairs/> -->
+                <PairSelector/>
+
             {:else if name === 'book'}
                 <OrderBook />
             {:else if name === 'history'}
@@ -151,17 +154,18 @@
 
     .pairs-overlay {
         width: auto;
-        height: 11rem;
-        top: 2rem;
+        height: 8rem;
+        top: 4rem;
         left: 0;
         right: 0;
         bottom: calc(50% + 1rem);
         border: 1px solid transparent;
         border-radius: 2rem;
         font-size: 2rem;
-        overflow: none;
         box-shadow: none;
-        background: var(--secondary-color);
+        background: var(--bg-gradient);
+        // background: var(--secondary-color);
+        z-index: 1;
         
         &.pairs-expanded {
             height: auto;
@@ -299,10 +303,10 @@
     @media (max-width: 1600px) {
         .pairs-overlay {
         width: auto;
-        height: 11rem;
+        height: 12rem;
         left: 0;
         right: 0;
-        top: 2rem;
+        top: 3rem;
         bottom: auto;
         &.pairs-expanded {
             width: auto;
@@ -367,7 +371,7 @@
         right: 20rem;
         top: auto;
         &.order-expanded {
-            height: 40rem;
+            height: auto;
             width: auto;
             top: auto;
             left: 0;
@@ -452,6 +456,7 @@
     .pairs-overlay {
         width: auto;
         height: 11rem;
+        
         top: 2rem;
         left: 0;
         right: 0;

@@ -1,184 +1,367 @@
 <script lang="ts">
-    import { ArrowDownFromLine, ArrowDownToLine } from 'lucide-svelte';
-import { writable } from 'svelte/store';
+  import { onMount } from 'svelte';
+  import { ArrowDownFromLine, ArrowDownToLine, ArrowUpFromDot, ArrowUpFromLine, ArrowUpFromLineIcon } from 'lucide-svelte';
+  import { writable, get } from 'svelte/store';
+  import type { Orderbook } from 'types/orderTypes';
+  import { pb } from '$lib/pocketbase';
+
+  import { selectedPair, pairs, availableBalances } from 'stores/orderStore';
   
-    // Component props
-    export let availableBalance: number = 0;
-    export let symbol: string = 'BTC/USDT';
-    export let baseCurrency: string = 'BTC';
-    export let quoteCurrency: string = 'USDT';
+  export let availableBalance: number = 0;
+  export let symbol: string = 'BTC/USDT';
+  export let baseCurrency: string = 'BTC';
+  export let quoteCurrency: string = 'USDT';
 
-    let isSelected = false;
+  let isSelected = false;
 
-    // State management
-    const orderType = writable<'limit' | 'market'>('limit');
-    const side = writable<'buy' | 'sell'>('buy');
-    const price = writable<number | null>(null);
-    const amount = writable<number>(0);
-    const sliderPercentage = writable<number>(0);
-    
-    $: maxAmount = $side === 'buy' 
-      ? $price ? availableBalance / $price : 0 
-      : availableBalance;
-      
-    $: orderValue = $price ? $amount * $price : 0;
-    
-    function handleTabChange(type: 'limit' | 'market') {
-      orderType.set(type);
-      if (type === 'market') {
-        price.set(null);
+  const orderType = writable<'limit' | 'market'>('limit');
+  const type = writable<'buy' | 'sell'>('buy');
+  const price = writable<number | null>(null);
+  const amount = writable<number>(0);
+  const sliderPercentage = writable<number>(0);
+    const unsubscribePair = selectedPair.subscribe(pair => {
+        if (pair) {
+            console.log('OrderForm: selectedPair changed to', pair);
+            baseCurrency = pair.base_token;
+            quoteCurrency = pair.quote_token;
+            symbol = `${baseCurrency}/${quoteCurrency}`;
+            
+            // Reset form values when pair changes
+            price.set(null);
+            amount.set(0);
+            sliderPercentage.set(0);
+        } else {
+            console.log('OrderForm: selectedPair is null');
+        }
+    });
+  // Function to get pairs for a token (similar to PairSelector)
+  function getPairsForToken(ticker: string) {
+      return get(pairs).filter(pair => 
+          pair.base_token === ticker || pair.quote_token === ticker
+      );
+  }
+  
+  selectedPair.subscribe(pair => {
+      if (pair) {
+          baseCurrency = pair.base_token;
+          quoteCurrency = pair.quote_token;
+          symbol = `${baseCurrency}/${quoteCurrency}`;
+          
+          // Reset form values when pair changes
+          price.set(null);
+          amount.set(0);
+          sliderPercentage.set(0);
       }
-    }
-    
-    function handleSideChange(newSide: 'buy' | 'sell') {
-      side.set(newSide);
-      amount.set(0);
-      sliderPercentage.set(0);
-    }
-    
-    function handleSliderChange(event: Event) {
-      const target = event.target as HTMLInputElement;
-      const percentage = parseInt(target.value);
-      sliderPercentage.set(percentage);
-      amount.set((maxAmount * percentage) / 100);
-    }
-    
-    function handleSubmit() {
-      const orderDetails = {
-        type: $orderType,
-        side: $side,
-        price: $price,
-        amount: $amount,
-        symbol,
-        total: orderValue
-      };
-      
-      console.log('Submitting order:', orderDetails);
-      // Here you would typically dispatch an event or call a function to place the order
-    }
-  </script>
+  });
   
-  <div class="order-form">
-    <!-- Order type tabs -->
-    <div class="order-tabs">
-      <button 
-        class="tab {$orderType === 'limit' ? 'active' : ''}" 
-        on:click={() => handleTabChange('limit')}
-      >
-        Limit
-      </button>
-      <button 
-        class="tab {$orderType === 'market' ? 'active' : ''}" 
-        on:click={() => handleTabChange('market')}
-      >
-        Market
-      </button>
-    </div>
+
+  function handleTabChange(type: 'limit' | 'market') {
+    orderType.set(type);
+    if (type === 'market') {
+      price.set(null);
+    }
+  }
+
+function updateAmountFromSlider() {
+    const newAmount = (maxAmount * $sliderPercentage) / 100;
     
-    <!-- Buy/Sell toggle -->
-    <div class="side-toggle" class:active={isSelected} on:click={() => {
-        isSelected = !isSelected;
+    amount.set(parseFloat(newAmount.toFixed(4)));
+}
+
+function updateSliderFromAmount() {
+    if (maxAmount === 0) {
+        sliderPercentage.set(0);
+        return;
+    }
+    const newPercentage = ($amount / maxAmount) * 100;
+    sliderPercentage.set(Math.min(100, Math.max(0, parseFloat(newPercentage.toFixed(0)))));
+}
+
+function setPercentage(percent: number) {
+    sliderPercentage.set(percent);
+    
+    const newAmount = (maxAmount * percent) / 100;
+    amount.set(parseFloat(newAmount.toFixed(4)));
+}
+
+
+  function handleTypeChange(newType: 'buy' | 'sell') {
+    type.set(newType);
+    amount.set(0);
+    sliderPercentage.set(0);
+  }
+  
+  function handleSliderChange(event: Event) {
+    const target = event.target as HTMLInputElement;
+    const percentage = parseInt(target.value);
+    sliderPercentage.set(percentage);
+    amount.set((maxAmount * percentage) / 100);
+  }
+  
+  function createOrderObject(): Partial<Orderbook> {
+    const currentPair = get(selectedPair);
+    const now = new Date().toISOString();
+    
+    // Create an expiration date 30 days from now
+    const expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + 30);
+    
+    return {
+      userId: pb.authStore.model?.id || '',
+      type: $type,
+      pairId: currentPair?.id || '',
+      price: $price || 0,
+      amount: $amount,
+      active_amount: $amount,
+      status: 'pending',
+      expires: expiryDate.toISOString(),
+      created: now,
+      updated: now
+    };
+  }
+  
+  async function handleSubmit() {
+        const currentPair = get(selectedPair);
+        
+        if (!pb.authStore.isValid) {
+            alert('You must be logged in to place orders');
+            return;
+        }
+        
+        if (!currentPair) {
+            alert('Please select a trading pair first');
+            return;
+        }
+        
+        if ($amount <= 0) {
+            alert('Please enter an amount greater than 0');
+            return;
+        }
+        
+        if ($orderType === 'limit' && !$price) {
+            alert('Please enter a price for limit orders');
+            return;
+        }
+        
+        try {
+            const orderData = {
+                ...createOrderObject(),
+                type: $type,
+                user: pb.authStore.model?.id,
+                symbol: symbol,
+                total: orderValue
+            };
+            
+            console.log('Submitting order:', orderData);
+            
+            // Create order in Pocketbase
+            const createdOrder = await pb.collection('orders').create(orderData);
+            console.log('Order created successfully:', createdOrder);
+            
+            // Reset form after submission
+            amount.set(0);
+            sliderPercentage.set(0);
+            if ($orderType === 'limit') {
+                price.set(null);
+            }
+            
+            alert('Order placed successfully!');
+        } catch (error) {
+            console.error('Error creating order:', error);
+            alert('Failed to place order. Please try again.');
+        }
+    }
+
+    function handleAmountChange() {
+    // Ensure amount doesn't exceed maxAmount
+    if ($amount > maxAmount) {
+        amount.set(maxAmount);
+    }
+    
+    // Calculate and update the slider percentage for display purposes
+    const percentValue = (maxAmount > 0) ? ($amount / maxAmount) * 100 : 0;
+    sliderPercentage.set(Math.round(percentValue));
+}
+function setAmount(value: number) {
+    // Update the amount store
+    amount.set(parseFloat(value.toFixed(4)));
+    
+    // Calculate and update the slider percentage for display purposes
+    const percentValue = (maxAmount > 0) ? (value / maxAmount) * 100 : 0;
+    sliderPercentage.set(Math.round(percentValue));
+}
+
+$: sliderStep = maxAmount > 0 ? maxAmount / 20 : 0.0001;
+
+$: if (maxAmount !== undefined && maxAmount > 0) {
+    if ($amount > maxAmount) {
+        amount.set(maxAmount);
+    }
+    handleAmountChange();
+}
+  onMount(() => {
+        return () => {
+            unsubscribePair();
+        };
+    });
+    
+    $: availableBalance = $type === 'buy' 
+        ? $availableBalances.buy 
+        : $availableBalances.sell;
+    
+    $: maxAmount = $type === 'buy' 
+        ? $price ? availableBalance / $price : 0 
+        : availableBalance;
+    
+    $: orderValue = $price ? $amount * $price : 0;
+    $: if (maxAmount !== undefined && $sliderPercentage > 0) {
+      updateAmountFromSlider();
+  }
+</script>
+
+<div class="order-form">
+  <!-- Display debugging info for development -->
+  <!-- {#if import.meta.env.DEV}
+      <div class="debug-info">
+          <small>Selected Pair: {$selectedPair ? `${$selectedPair.base_token}/${$selectedPair.quote_token}` : 'None'}</small>
+      </div>
+  {/if} -->
+
+  <!-- Order type tabs -->
+  <div class="order-tabs">
+      <button 
+          class="tab {$orderType === 'limit' ? 'active' : ''}" 
+          on:click={() => handleTabChange('limit')}
+      >
+          Limit
+      </button>
+      <button 
+          class="tab {$orderType === 'market' ? 'active' : ''}" 
+          on:click={() => handleTabChange('market')}
+      >
+          Market
+      </button>
+  </div>
+  
+  <!-- Selected pair display -->
+
+  <!-- Buy/Sell toggle -->
+  <div class="type-toggle" class:active={isSelected} on:click={() => {
+          isSelected = !isSelected;
       }}>
       <button 
-        class="side-btn {$side === 'buy' ? 'active' : ''}" 
-        on:click={() => handleSideChange('buy')} 
+          class="type-btn {$type === 'buy' ? 'active' : ''}" 
+          on:click={() => handleTypeChange('buy')} 
       >
-        <ArrowDownToLine/>
-        Buy
+          <ArrowDownToLine/>
+          Buy
       </button>
       <button 
-        class="side-btn {$side === 'sell' ? 'active' : ''}" 
-        on:click={() => handleSideChange('sell')}
+          class="type-btn {$type === 'sell' ? 'active' : ''}" 
+          on:click={() => handleTypeChange('sell')}
       >
-        <ArrowDownFromLine/>
-        Sell
+          <ArrowUpFromLine/>
+          Sell
       </button>
-    </div>
-    
-    <div class="order-form-container">
+  </div>
+  
+  <div class="order-form-container">
       <!-- Left column -->
       <div class="form-column">
-        <!-- Available balance -->
-        <div class="balance-info">
-          <span>Available </span>
-          <span class="available">{availableBalance} {$side === 'buy' ? quoteCurrency : baseCurrency}</span>
-        </div>
-        
-        <!-- Price input (only for limit orders) -->
-        {#if $orderType === 'limit'}
-          <div class="input-group">
-            <label for="price-input">Price</label>
-            <div class="input-wrapper">
-              <input 
-                id="price-input"
-                type="number" 
-                min="0" 
-                step="0.0001"
-                bind:value={$price}
-                placeholder="0.00"
-              />
-              <span class="currency">{quoteCurrency}</span>
+          <!-- Available balance -->
+          <div class="balance-info">
+              <span>Available Balance: </span>
+              <div class="selected-pair">
+                {#if $selectedPair}
+                    <span class="available">
+                      <div class='number'>
+                        {availableBalance} {$type === 'buy' ? quoteCurrency : baseCurrency}                      
+                      </div>
+                        <!-- {$selectedPair.base_token}/{$selectedPair.quote_token} -->
+                    </span>
+                {:else}
+                    <span class="warning">No pair selected! Select a pair from the pair selector.</span>
+                {/if}
             </div>
+            
+              <!-- <span class="available">{availableBalance} {$type === 'buy' ? quoteCurrency : baseCurrency}</span> -->
           </div>
-        {/if}
-        
-        <!-- Amount input -->
-        <div class="input-group">
+          
+          {#if $orderType === 'limit'}
+          <div class="input-group">
+              <label for="price-input">Price</label>
+              <div class="input-wrapper">
+                  <input 
+                      id="price-input"
+                      type="number" 
+                      min="0" 
+                      step="0.0001"
+                      bind:value={$price}
+                      placeholder="0.00"
+                  />
+                  <span class="currency">{quoteCurrency}</span>
+              </div>
+          </div>
+      {/if}
+      
+      <!-- Amount input -->
+      <div class="input-group">
           <label for="amount-input">Amount</label>
           <div class="input-wrapper">
-            <input 
-              id="amount-input"
-              type="number" 
-              min="0" 
-              step="0.0001"
-              bind:value={$amount}
-              placeholder="0.00"
-            />
-            <span class="currency">{baseCurrency}</span>
+              <input 
+                  id="amount-input"
+                  type="number" 
+                  min="0" 
+                  step="0.0001"
+                  bind:value={$amount}
+                  on:input={handleAmountChange}
+                  placeholder="0.00"
+              />
+              <span class="currency">{baseCurrency}</span>
           </div>
-        </div>
-        
-        <!-- Percentage slider -->
-        <div class="slider-container">
+      </div>
+      
+      <!-- Percentage slider with finer 5% steps -->
+      <div class="slider-container">
           <input 
-            type="range" 
-            min="0" 
-            max="100" 
-            step="25" 
-            bind:value={$sliderPercentage}
-            on:input={handleSliderChange}
+              type="range" 
+              min="0" 
+              max={maxAmount} 
+              step={maxAmount / 20} 
+              bind:value={$amount}
           />
           <div class="percentage-buttons">
-            <button on:click={() => { sliderPercentage.set(0); amount.set(0); }}>0%</button>
-            <button on:click={() => { sliderPercentage.set(25); amount.set(maxAmount * 0.25); }}>25%</button>
-            <button on:click={() => { sliderPercentage.set(50); amount.set(maxAmount * 0.5); }}>50%</button>
-            <button on:click={() => { sliderPercentage.set(75); amount.set(maxAmount * 0.75); }}>75%</button>
-            <button on:click={() => { sliderPercentage.set(100); amount.set(maxAmount); }}>100%</button>
+              <button on:click={() => setAmount(0)}>0%</button>
+              <button on:click={() => setAmount(maxAmount * 0.25)}>25%</button>
+              <button on:click={() => setAmount(maxAmount * 0.5)}>50%</button>
+              <button on:click={() => setAmount(maxAmount * 0.75)}>75%</button>
+              <button on:click={() => setAmount(maxAmount)}>100%</button>
           </div>
-        </div>
+      </div>
       </div>
       
       <!-- Right column -->
       <div class="form-column">
-        <!-- Total order value -->
-        <div class="total-value">
-          <span>Total</span>
-          <span class="price">{orderValue.toFixed(2)} {quoteCurrency}</span>
-        </div>
-        
-        <!-- Submit button -->
-
+          <!-- Total order value -->
+          <div class="total-value">
+              <span>Total</span>
+              <span class="price">                        
+                {orderValue.toFixed(2)} {$type === 'buy' ? quoteCurrency : baseCurrency}                      
+              </span>
+          </div>
       </div>
+      
+      <!-- Submit button -->
       <button 
-      class="submit-button {$side === 'buy' ? 'buy' : 'sell'}" 
-      on:click={handleSubmit}
-      disabled={$amount <= 0 || ($orderType === 'limit' && !$price)}
-    >
-      {$side === 'buy' ? 'Buy' : 'Sell'} {baseCurrency}
-    </button>
-    </div>
+          class="submit-button {$type === 'buy' ? 'buy' : 'sell'}" 
+          on:click={handleSubmit}
+          disabled={!$selectedPair || $amount <= 0 || ($orderType === 'limit' && !$price)}
+      >
+          {$type === 'buy' ? 'Buy' : 'Sell'} {baseCurrency}
+      </button>
   </div>
-  
+</div>
+
   <style lang="scss">
 
     @use "src/styles/themes.scss" as *;
@@ -221,13 +404,13 @@ import { writable } from 'svelte/store';
       border-radius: 2rem;
     }
     
-    .side-toggle {
+    .type-toggle {
       display: flex;
       padding: 10px;
       gap: 8px;
     }
     
-    .side-btn {
+    .type-btn {
       flex: 1;
       padding: 0.5rem;
       display: flex;
@@ -250,21 +433,21 @@ import { writable } from 'svelte/store';
 
 
     }
-    .side-btn.active {
+    .type-btn.active {
         box-shadow: -100px -1px 100px 4px rgba(255, 255, 255, 0.2);
         background: var(--text-color);
         color: var(--primary-color);
         border: 1px solid var(--secondary-color);
 
     }
-    .side-btn.active.buy {
+    .type-btn.active.buy {
       background: rgba(0, 180, 100, 0.1);
       border-color: #00b464;
       color: #00b464;
       font-weight: 700;
     }
     
-    .side-btn.active.sell {
+    .type-btn.active.sell {
       background: rgba(255, 90, 90, 0.1);
       border-color: #ff5a5a;
       color: #ff5a5a;
@@ -310,13 +493,23 @@ import { writable } from 'svelte/store';
         text-align: left;
         width: auto;
         left: 0;
-        gap: 4rem;
-
+        gap: 2rem;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
 
         & span.available {
-            font-size: 2rem;
-            font-weight: 600;
+          font-size: 1.25rem;
+          font-weight: 500;
+            gap: 0.5rem;
+            display: flex;
+            align-items: center;
+            & .number {
+              font-weight: 600;
+              font-size: 1.25rem;
+            }
         }
+
     }
 
     .input-group {

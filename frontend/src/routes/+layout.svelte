@@ -409,7 +409,7 @@ header {
     height: 4rem;
     transition: all 0.3s ease;
     user-select: none;
-    z-index: 1;
+    z-index: 1000;
 	border-bottom: 1px solid var(--secondary-color);
 	& h1 {
         font-size: 30px;

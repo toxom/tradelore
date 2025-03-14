@@ -28,6 +28,14 @@ export default {
 		network: 'Choose Network',
 		deposit: 'Send & Receive',
 	},
+	admin: {
+		tabs: {
+			wallets: 'Configure Wallets',
+			tokens: 'Configure Tokens',
+			pairs: 'Configure Pairs',
+
+		},
+	},
 	agent: {
 		agents: 'Agents',
 		buttonForm: 'Create New Agent',

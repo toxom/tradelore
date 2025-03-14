@@ -28,6 +28,13 @@ export default {
 		network: 'Выберите сеть',
 		deposit: 'Депозит',
 	},
+	admin: {
+		tabs: {
+			wallets: 'Настроить кошельки',
+			tokens: 'Настроить токены',
+			pairs: 'Настроить пары',
+		},
+	},
 	agent: {
 		agents: 'Агенты',
 		buttonForm: 'Создать нового агента',

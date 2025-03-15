@@ -54,6 +54,8 @@
     import PriceSticker from '$lib/containers/PriceSticker.svelte';
     import IcicleD3 from '$lib/containers/IcicleD3.svelte';
     import Agents from '$lib/overlays/Agents.svelte'
+	import NewsFeed from '$lib/overlays/NewsFeed.svelte';
+	import { BotIcon, NewspaperIcon, TrendingUpDown, Wallet2 } from 'lucide-svelte';
 
     CustomEase.create("customEase", "0.075, 0.82, 0.165, 1");
 
@@ -117,12 +119,37 @@
                 }}
             >
                 {#if name === 'deposit'}
+                    <div class="overlay-header">
+                        <div class="overlay-title">
+                            <!-- <TrendingUpDown size="2rem"/> -->
+                            <h1 class="overlay-header">
+                                {$t('nav.portfolio')}
+                            </h1>
+                        </div>
+                    </div>
                     <Deposit />
                 {:else if name === 'trends'}
+                
                     <IcicleD3 />
                 {:else if name === 'chart2'}
-                    <!-- <TrendChart /> -->
+                    <div class="overlay-header">
+                        <div class="overlay-title">
+                            <!-- <NewspaperIcon size="2rem"/> -->
+                            <h1 class="overlay-header">
+                                {$t('nav.news')}
+                            </h1>
+                        </div>
+                    </div>
+                    <NewsFeed/>
                 {:else if name === 'info'}
+                    <div class="overlay-header">
+                        <div class="overlay-title">
+                            <!-- <TrendingUpDown size="2rem"/> -->
+                            <h1 class="overlay-header">
+                                {$t('nav.trend')}
+                            </h1>
+                        </div>
+                    </div>
                     <PriceSticker />
                 {/if}
             </div>
@@ -141,8 +168,21 @@
             }}
         >
             {#if name === 'wallet'}
+                <div class="overlay-header">
+                    <div class="overlay-title">
+                        <!-- <Wallet2 size="2rem"/> -->
+                        <h1 class="overlay-header">{$t('nav.wallet')}</h1>
+                    </div>
+                </div>
                 <Wallet/>
             {:else if name === 'feed'}
+                <div class="overlay-header">
+                    <div class="overlay-title">
+                        <!-- <BotIcon size="2rem"/> -->
+                        <h1 class="overlay-header">{$t('agent.agents')}</h1>
+
+                    </div>
+                </div>
                 <Agents />
             {/if}
         </div>
@@ -219,6 +259,7 @@
         display: flex;
         justify-content: center;
         right: auto;
+        overflow: hidden;
     }
 
     .trends-overlay {
@@ -243,14 +284,28 @@
         overflow: hidden;
     }
 
-
-    .deposit-overlay.deposit-expanded,
-    .wallet-overlay.wallet-expanded,
-
+    .deposit-overlay.deposit-expanded {
+        width: auto;
+        height: auto;
+        display: flex;
+        justify-content: top;
+        align-items: center;
+        top: 4rem;
+        left: 4rem;
+        right: 4rem;
+        bottom: 8rem;
+        overflow-x: hidden;
+        overflow-y: scroll;
+        scrollbar-width:2px;
+        scrollbar-color: var(--secondary-color) transparent;
+        scroll-behavior: smooth; 
+        font-size: 1rem;
+    }
+    
+.wallet-overlay.wallet-expanded,
 .trends-overlay.trends-expanded,
 .chart2-overlay.chart2-expanded,
 .feed-overlay.feed-expanded,
-
 .info-overlay.info-expanded {
     width: auto;
     height: auto;
@@ -274,19 +329,6 @@
         margin-bottom: 1.5rem;
     }
 
-    .metric {
-        text-align: center;
-    }
-
-    .metric .value {
-        font-size: 1.75rem;
-        font-weight: 600;
-    }
-
-    .metric .label {
-        font-size: 0.875rem;
-        color: #666;
-    }
 
     .recent-activity {
         margin-top: 1.5rem;
@@ -415,6 +457,10 @@
     .info-overlay.info-expanded {
         height: auto;
         width: auto;
+        justify-content: flex-start;
+        margin-top: 0;
+        margin-right: 0;
+        display: flex;
         top: 28rem;
         left: 0;
         right: 0;

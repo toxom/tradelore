@@ -17,6 +17,9 @@ export default {
 		signup: 'Sign Up',
 		wallet: 'Wallets',
 		trade: 'Trade',
+		news: 'News',
+		trend: 'Trending',
+		portfolio: 'Portfolio',
 		profileTabs: {
 			id: 'Info',
 			preferences: 'Preferences',

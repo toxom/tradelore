@@ -73,7 +73,6 @@
   </script>
   
   <div class="sticker-container">
-    <h2 class="title">Token Prices</h2>
     
     {#if loading && prices.length === 0}
       <div class="loading-container">

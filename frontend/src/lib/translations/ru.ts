@@ -17,6 +17,9 @@ export default {
 		signup: 'Зарегистрироваться',
 		wallet: 'Кошелек',
 		trade: 'Рынки',
+		news: 'Новости',
+		trend: 'В тренде',
+		portfolio: 'Портфолио',
 		profileTabs: {
 			id: 'Информация',
 			preferences: 'Настройки',

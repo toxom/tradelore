@@ -76,6 +76,45 @@ $themes: (
 .app-container {
 	@include theme-styles;
 }
+.overlay-header {
+
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: auto;
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	background: var(--bg-gradient);
+	gap: 0.5rem;
+
+
+	height: 3rem;
+	margin-bottom: 2rem;
+	margin-right: 0;
+	display: flex;
+	width: 100%;
+	color: var(--tertiary-color);
+
+	h1 {
+		color: var(--tertiary-color);
+		transition: all 0.3s ease;
+		background: transparent;
+		margin: 0;
+		border-radius: 0;
+		padding: 0;
+		margin-top: 0.75rem;
+		border: none;
+		height: 1.5rem;
+		width: 100%;
+		font-size: 1.5rem;
+	}
+	
+	
+}
+
+
 .backdrop {
 	position: fixed;
 	top: 0;
@@ -104,6 +143,13 @@ $themes: (
 
 	&:hover {
 		box-shadow: -50px -1px 50px 4px rgba(255, 255, 255, 0.2);
+		.overlay-header {
+			color: var(--text-color);
+			;
+		}
+		& h1.overlay-header {
+			color: var(--text-color);
+		}
 
 	}
 
@@ -511,6 +557,7 @@ th:nth-child(5), td:nth-child(5) {
 	width: 100%;
 	max-width: 1200px;
 	margin: 0 auto;
+	margin-top: 2rem;
 	padding: 0;
   }
 
@@ -726,6 +773,29 @@ th:nth-child(5), td:nth-child(5) {
 	text-align: right;
   }
 
+  @keyframes pulse {
+	0% {
+		opacity: 0.5;
+	}
+	50% {
+		opacity: 1;
+	}
+	100% {
+		opacity: 0.5;
+	}
+}
+@keyframes scaleEffect {
+      0% {
+          transform: scale(1);
+      }
+      50% {
+          transform: scale(1.1);
+      }
+      100% {
+          transform: scale(1);
+      }
+  }
+
   .agents-grid {
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -741,6 +811,7 @@ th:nth-child(5), td:nth-child(5) {
 	}
 	
   }
+  
 
   .agent-section {
     margin-bottom: 1.5rem;

@@ -336,8 +336,8 @@ onMount(async () => {
       <div class="spinner"></div>
     </div> 
   {:else}
+  
     <div class="container">
-      <h1>{$t('nav.wallet')}</h1>
 
       {#each getUniqueTokenIds(tokens) as tokenId (tokenId)}
         <div class="card {walletsForTokens.has(tokenId) ? 'has-wallet' : ''}">
@@ -743,17 +743,7 @@ onMount(async () => {
 
   }
 
-  .overlay-header {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    gap: 1rem;
-    font-size: 1.5rem;
-    margin: 0 auto;
-    line-height: 0.5;
 
-  }
 
   .token-icon {
 	width: auto;

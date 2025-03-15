@@ -97,8 +97,6 @@
   </script>
   
   <div class="agents-container">
-    <h1>Agents</h1>
-    
     <section>
       <button class="toggle-button" on:click={toggleForm}>
         {showForm ? 'Cancel' : 'Create New Agent'}

@@ -133,15 +133,15 @@ export function handleImageError(event: Event) {
 
 
 </script>
-<div class="basic-container">
-    <div class="metric">
-        <div class="value">${totalBalance.toFixed(2)}</div>
-        <div class="value">{portfolioGrowth.toFixed(1)}%</div>
-    </div>
-  </div>
+
   
 <div class="container">
-    
+    <div class="basic-container">
+        <div class="metric">
+            <div class="value">${totalBalance.toFixed(2)}</div>
+            <div class="value">{portfolioGrowth.toFixed(1)}%</div>
+        </div>
+      </div>
     <svg 
         width={size} 
         height={size} 
@@ -156,7 +156,9 @@ export function handleImageError(event: Event) {
                 on:mouseleave={handleMouseLeave}
                 class="pie-segment"
             />
-            <g transform={`translate(${segment.midX - 12}, ${segment.midY - 12})`}>
+
+            <!-- <g transform={`translate(${segment.midX - 12}, ${segment.midY - 12})`}>
+                
                 <image
                     href={getTokenIcon(segment.tokenId)}
                     width="24"
@@ -172,11 +174,11 @@ export function handleImageError(event: Event) {
                     {segment.value.toFixed(6)}
 
                 </text>
-            </g>
+            </g> -->
         {/each}
         
         <circle 
-            r={radius / 2.5} 
+            r={radius / 2} 
             cx={radius} 
             cy={radius} 
             fill={bgColor} 
@@ -185,12 +187,22 @@ export function handleImageError(event: Event) {
     </svg>
 </div>
 
-<style>
+<style lang="scss">
+
+    @use "src/styles/themes.scss" as *;
+        * {
+            font-family: var(--font-family);
+
+        }
     .container {
         display: flex;
-        justify-content: center;
-        align-items: flex-start;
+        height: auto;
+        position: relative;
+        justify-content: flex-start;
+        margin-top: 3rem;
         padding: 2rem;
+        height: auto;
+        margin: 0;
     }
 
     .pie-segment {
@@ -210,22 +222,50 @@ export function handleImageError(event: Event) {
         flex-direction: column;
         align-items: top;
         position: absolute;
-        top: auto;
-        margin-top: 4rem;
+        top:calc(50% - 7rem);
+        left:calc(50% - 7rem);
         justify-content: center;
         gap: 0;
-        left:calc(50% - 6rem);
         margin-left: 0;
         border-radius: 50%;
-        background: var(--bg-gradient-fade);
-        width:12rem;
-        height: 12rem;
-        margin-bottom: 4rem;
-        border: 1px solid var(--tertiary-color);
+        background: transparent;
+        opacity: 0.5;
+        width:14rem;
+        height: 14rem;
         transition: all 0.2s ease-in-out;
         &:hover {
             animation: scaleEffect 1.3s ease-in-out;
         }
 
     }
+
+    .metric {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background: transparent;
+        width: auto;
+        height: 100%;
+        gap: 0;
+        margin-bottom: 0;
+        text-align: left;
+        color: var(--text-color);
+
+        & .value {
+            font-size: 3rem;
+        font-weight: 600;
+        color: var(--text-color);
+        }
+        & .label {
+            font-size: 2rem;
+            color: #666;
+        }
+        & .conversion {
+            font-size: 2rem;
+            color: #666;
+            font-style: italic;
+        }
+    }
+
 </style>

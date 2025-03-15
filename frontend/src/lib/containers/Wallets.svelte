@@ -22,6 +22,7 @@
   let expandedAgentStates: Record<string, boolean> = {}; // Toggle state for token's agents section
   let walletAgentsMap: Record<string, string[]> = {}; // Map to store which agents are assigned to which wallets
     let agentSpendLimitInputs = {};
+    let filterMode = "all"; // Options: "all", "agents", "pairs"
 
   let selectedCurrency: string = '';
   let selectedNetwork: string = '';
@@ -68,30 +69,28 @@
     expandedAgentStates = {...expandedAgentStates};
   }
   function toggleTokenExpansion(tokenId: string) {
-    // Toggle the current state
-    expandedTokenIds[tokenId] = !expandedTokenIds[tokenId];
-    
-    // If we're opening this content
-    if (expandedTokenIds[tokenId]) {
-      // Close agent content for this token
-      expandedAgentStates[tokenId] = false;
-      // Handle opening this card (will close others)
-      openCardContent(tokenId, 'token');
-    } else {
-      // If we're closing this content, reset tracking if this was the open card
-      if (openCardTokenId === tokenId && openCardContentType === 'token') {
-        openCardTokenId = null;
-        openCardContentType = null;
-      }
+  // Toggle the current state
+  expandedTokenIds[tokenId] = !expandedTokenIds[tokenId];
+  
+  // If we're opening this content
+  if (expandedTokenIds[tokenId]) {
+    // Close agent content for this token
+    expandedAgentStates[tokenId] = false;
+    // Handle opening this card (will close others)
+    openCardContent(tokenId, 'token');
+  } else {
+    // If we're closing this content, reset tracking if this was the open card
+    if (openCardTokenId === tokenId && openCardContentType === 'token') {
+      openCardTokenId = null;
+      openCardContentType = null;
     }
+  }
   
   // Update for reactivity
   expandedTokenIds = {...expandedTokenIds};
   expandedAgentStates = {...expandedAgentStates};
 }
-
-  // Toggle agents section by tokenId instead of walletId
-  function toggleAgentExpansion(tokenId) {
+function toggleAgentExpansion(tokenId) {
   // Toggle the current state
   expandedAgentStates[tokenId] = !expandedAgentStates[tokenId];
   
@@ -113,6 +112,7 @@
   expandedTokenIds = {...expandedTokenIds};
   expandedAgentStates = {...expandedAgentStates};
 }
+
 
   export function handleImageError(event: Event) {
     const img = event.target as HTMLImageElement;
@@ -292,6 +292,63 @@ async function handleUpdateSpendLimit(walletId: string, agentSpendLimit: number)
     alert(`Error updating spend limit: ${error.message}`);
   }
 }
+
+function hasAgentsForToken(tokenId: string): boolean {
+  return getAgentCountForToken(tokenId) > 0;
+}
+
+function hasPairsForToken(tokenId: string): boolean {
+  const uniqueTokens = getTokensByTokenId(tokenId).filter((token, index, self) => 
+    token.network.toLowerCase() !== 'unknown' || 
+    index === self.findIndex(t => t.network.toLowerCase() === 'unknown')
+  );
+  return uniqueTokens.length > 1;
+}
+
+function shouldDisplayWallet(tokenId: string): boolean {
+  if (filterMode === "all") {
+    return true;
+  } else if (filterMode === "agents") {
+    return hasAgentsForToken(tokenId);
+  } else if (filterMode === "token-options") {
+    return hasPairsForToken(tokenId);
+  }
+  return true;
+}
+$: {
+  if (filterMode === "agents") {
+    getUniqueTokenIds(tokens).forEach(tokenId => {
+      if (hasAgentsForToken(tokenId)) {
+        expandedAgentStates[tokenId] = true;
+        expandedTokenIds[tokenId] = false;
+      } else {
+        expandedAgentStates[tokenId] = false;
+      }
+    });
+  } else if (filterMode === "token-options") {
+    getUniqueTokenIds(tokens).forEach(tokenId => {
+      if (hasPairsForToken(tokenId)) {
+        expandedTokenIds[tokenId] = true;
+        expandedAgentStates[tokenId] = false;
+      } else {
+        expandedTokenIds[tokenId] = false;
+      }
+    });
+  } else if (filterMode === "all") {
+    getUniqueTokenIds(tokens).forEach(tokenId => {
+      expandedTokenIds[tokenId] = false;
+      expandedAgentStates[tokenId] = false;
+    });
+    
+    openCardTokenId = null;
+    openCardContentType = null;
+  }
+  
+  // Create new references to trigger reactivity
+  expandedTokenIds = {...expandedTokenIds};
+  expandedAgentStates = {...expandedAgentStates};
+}
+
 onMount(async () => {
   try {
     loadingTokens = true;
@@ -330,7 +387,30 @@ onMount(async () => {
 
 <div class="sticker-container">
   <div class="sticker-header"></div>
-
+  <div class="sticker-header">
+    <div class="wallet-filter">
+      <div class="filter-buttons">
+        <button 
+          class="filter-button {filterMode === 'all' ? 'active' : ''}" 
+          on:click={() => filterMode = 'all'}
+        >
+          All
+        </button>
+        <button 
+          class="filter-button {filterMode === 'agents' ? 'active' : ''}" 
+          on:click={() => filterMode = 'agents'}
+        >
+          Agents
+        </button>
+        <button 
+          class="filter-button {filterMode === 'token-options' ? 'active' : ''}" 
+          on:click={() => filterMode = 'token-options'}
+        >
+          Pairs
+        </button>
+      </div>
+    </div>
+  </div>
   {#if loadingTokens}
     <div class="loading-container">
       <div class="spinner"></div>
@@ -339,8 +419,8 @@ onMount(async () => {
   
     <div class="container">
 
-      {#each getUniqueTokenIds(tokens) as tokenId (tokenId)}
-        <div class="card {walletsForTokens.has(tokenId) ? 'has-wallet' : ''}">
+      {#each getUniqueTokenIds(tokens).filter(tokenId => shouldDisplayWallet(tokenId)) as tokenId (tokenId)}
+      <div class="card {walletsForTokens.has(tokenId) ? 'has-wallet' : ''}">
           <div class="token-header">
             <img 
               src={getTokenIcon(tokenId)} 
@@ -392,7 +472,7 @@ onMount(async () => {
               </button>
             {/if}
           </div>
-          {#if expandedTokenIds[tokenId]}
+          {#if expandedTokenIds[tokenId] || (filterMode === "token-options" && hasPairsForToken(tokenId))}
           {@const uniqueTokens = getTokensByTokenId(tokenId).filter((token, index, self) => 
             // Keep only the first occurrence of each network, or if network is unknown
             token.network.toLowerCase() !== 'unknown' || 
@@ -434,7 +514,7 @@ onMount(async () => {
 
           <!-- Display agents section - now grouped by token instead of wallet -->
           {#if expandedAgentStates[tokenId] && walletsForTokens.has(tokenId)}
-            <div class="agents-container">
+          <div class="agents-container">
               {#if $agentStore.loading}
                 <div class="loading">Loading agents...</div>
               {:else if $agentStore.error}

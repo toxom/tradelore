@@ -1098,6 +1098,44 @@ th:nth-child(5), td:nth-child(5) {
     margin-top: 0;
   }
 
+  .wallet-filter {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+    width: 100%;
+  }
+  
+  .filter-buttons {
+    display: flex;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	transition: all 0.3s ease;
+  }
+  
+  .filter-button {
+    padding: 8px 16px;
+    background: var(--secondary-color);
+	color: var(--placeholder-color);
+    border: none;
+	width: 6rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    flex: 1;
+	transition: all 0.3s ease;
+
+  }
+  
+  .filter-button:hover {
+    background-color: #e0e0e0;
+  }
+  
+  .filter-button.active {
+    background: var(--bg-gradient-fade);
+    color: white;
+  }
+
   .network-name {
 	font-weight: 800;
 	// border-top: 1px solid var(--tertiary-color);

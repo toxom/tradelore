@@ -1,0 +1,5 @@
+/node_modules
+/dist
+.env
+database/pocketbase/pb_data/auxiliary.db
+database/pocketbase/pb_data/

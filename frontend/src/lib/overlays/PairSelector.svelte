@@ -270,34 +270,40 @@ $: filteredTokens = $localTokens.filter((token: Token) => {
             </div>
         {:else}
             <div class="table-container">
+                <div class="controls">
+                    <div class="search-box">
+                        <Search />
+                        <input 
+                            type="text" 
+                            placeholder="Search..." 
+                            bind:value={searchQuery}
+                            on:input={handleSearch}
+                        />
+                        
+                    </div>
+                    <div class="tabs">
+                        {#each tabs as tab}
+                            <button
+                                class="tab {activeTab === tab ? 'active' : ''}"
+                                on:click={() => handleTabClick(tab)}
+                            >
+                                {#if tab === 'Favorites'}
+                                    <Star size="26" />
+                                {/if}
+                                {tab}
+                            </button>
+                        {/each}
+                    </div>
+                </div>
+
                 <table>
                     <thead>
                         <tr>
                             <th>
                                 <div class="controls">
                                     Token
-                                    <div class="search-box">
-                                        <Search />
-                                        <input 
-                                            type="text" 
-                                            placeholder="Search..." 
-                                            bind:value={searchQuery}
-                                            on:input={handleSearch}
-                                        />
-                                    </div>
-                                    <div class="tabs">
-                                        {#each tabs as tab}
-                                            <button
-                                                class="tab {activeTab === tab ? 'active' : ''}"
-                                                on:click={() => handleTabClick(tab)}
-                                            >
-                                                {#if tab === 'Favorites'}
-                                                    <Star size="26" />
-                                                {/if}
-                                                {tab}
-                                            </button>
-                                        {/each}
-                                    </div>
+
+
                                 </div>
                             </th>
                             <th>
@@ -489,12 +495,14 @@ $: filteredTokens = $localTokens.filter((token: Token) => {
         &:hover {
             background-color: var(--secondary-color);
             color: var(--text-color);
+            border-radius: 1rem;
         }
 
         &.active {
             background-color: var(--tertiary-color);
             color: var(--text-color);
             font-weight: 800;
+            border-radius: 1rem;
         }
     }
 
@@ -693,7 +701,7 @@ $: filteredTokens = $localTokens.filter((token: Token) => {
                 text-align: left;
                 // border-bottom: 1px solid var(--primary-color);
                 border-left: none;
-                height: 2.5rem;
+                height: auto;
             }
 
             .td-ticker {

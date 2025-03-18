@@ -1,8 +1,8 @@
 <script lang="ts">
     import { onMount, createEventDispatcher, tick } from 'svelte';
     import { pb, currentUser } from '$lib/pocketbase';
-    import { fly, fade, slide, scale } from 'svelte/transition';
-    import { cubicOut } from 'svelte/easing';
+    import { fly, fade, slide, scale, crossfade } from 'svelte/transition';
+    import { cubicOut, quintOut } from 'svelte/easing';
     import { X, Calculator, Camera, Bell, MapPin, CircleX, LogIn, User, LogOut, MessageCircle, Filter, FilterX, Compass, ArrowBigUp, ArrowUp } from 'lucide-svelte';
 	import { Moon, Sun, Sunset, Sunrise, Focus, Bold, Gauge, Key, Bone } from 'lucide-svelte';
     import { Wallet, Landmark, CreditCard, BarChart, PieChart } from 'lucide-svelte';
@@ -17,8 +17,8 @@
     import { drag } from '$lib/actions/drag';
 	import Language from '@tabler/icons-svelte/icons/language';
 	import Dropdown from '$lib/containers/Dropdown.svelte';
+    import StyleSwitcher from '$lib/overlays/StyleSwitcher.svelte';
 	import Footer from '$lib/containers/Footer.svelte';
-	import StyleSwitcher from '$lib/overlays/StyleSwitcher.svelte';
     import ToggleAllButton from "$lib/buttons/ToggleAllButton.svelte"
     import { handleLanguageChange } from '../clients/languageClient'
     import {
@@ -29,6 +29,8 @@
         currentTimezone,
         currentCurrency,
     } from '../stores/preferences.store'
+    import { page } from '$app/stores';
+
 
 	export let user: any;
 	export let onClose: () => void;
@@ -55,6 +57,35 @@
     let showProfile = false;
     let dragDistance = 0; 
     let isToggled = false;
+
+    const [send, receive] = crossfade({
+        duration: 400,
+        fallback(node) {
+            return scale(node, { 
+                start: 0.8, 
+                opacity: 0,
+                duration: 300,
+                easing: quintOut 
+            });
+        }
+    });
+
+    let activeView = '/dashboard'; 
+
+    async function navigateWithTransition(path) {
+        if (activeView === path) return; 
+        
+        const previousView = activeView;
+        activeView = path;
+        
+        setTimeout(() => {
+            goto(path);
+        }, 200); 
+    }
+
+    $: if ($page) {
+        activeView = $page.url.pathname;
+    }
 
 	const dispatch = createEventDispatcher();
 
@@ -157,21 +188,25 @@
 		<div class="nav-links" transition:fly={{ y: 20, duration: 0 }}>
             {#if $currentUser}
             <button 
-                class="toggle-button"
-                class:active={window?.location?.pathname === '/dashboard'}
-                on:click={() => goto('/dashboard')}
+                class="nav-link"
+                class:active={activeView === '/dashboard'}
+                on:click={() => navigateWithTransition('/dashboard')}
             >
-                <Wallet size={20} />
-                <span>{$t('nav.wallet')}</span>
+                <div in:receive={{key: 'wallet'}} out:send={{key: 'wallet'}}>
+                    <Wallet size={20} />
+                    <span>{$t('nav.wallet')}</span>
+                </div>
             </button>
             <button 
-                class="toggle-button"
-                class:active={window?.location?.pathname === '/trading'}
-                on:click={() => goto('/trading')}
+                class="nav-link"
+                class:active={activeView === '/trading'}
+                on:click={() => navigateWithTransition('/trading')}
             >
-                <BarChart size={20} />
-                <span>{$t('nav.trade')}</span>
-            </button>                
+                <div in:receive={{key: 'trade'}} out:send={{key: 'trade'}}>
+                    <BarChart size={20} />
+                    <span>{$t('nav.trade')}</span>
+                </div>
+            </button>          
             <button 
                     class="nav-link" 
                     class:active={overlayState.notifications} 
@@ -182,7 +217,6 @@
                 </button>
 
                 {:else}
-				{/if}
 
 			<StyleSwitcher />
 			<Dropdown
@@ -190,6 +224,8 @@
 				selectedValue={currentLang}
 				on:select={handleLanguageChange}
 			/>
+				{/if}
+
 			<button 
                 class="nav-link" 
                 on:click={toggleAuthOrProfile} 
@@ -214,9 +250,13 @@
 		</div>
 	</header>
 
-	<main>
-		<slot />
-	</main>
+    <div class="page-container">
+        {#key $page.url.pathname}
+            <main in:fade={{ duration: 250, delay: 150 }} out:fade={{ duration: 150 }}>
+                <slot />
+            </main>
+        {/key}
+    </div>
 	<div class="overlays-container" class:notifications-open={overlayState.notifications}>
 		{#each Object.entries(overlayState) as [overlayName, isVisible]}
 			{#if isVisible && overlayName !== 'notifications'}
@@ -329,6 +369,9 @@
 		top: 0;
 		font-family:var(--font-family);
     }
+
+
+    
     button.close-button {
         background: transparent;
         border: none;
@@ -392,12 +435,14 @@ header {
     position: fixed;
     // max-width: 1600px; 
     top: 0;
+    left: 0;
+    right: 0;
     // left: 50%; 
     // transform: translateX(-50%); 
-    width: 100%; 
-    background: var(--bg-color);
+    width: auto; 
+    margin: 0;
+    // background: var(--bg-color);
     backdrop-filter: blur(40px);
-
     justify-content: space-around;
     align-items: center;
     height: 4rem;
@@ -433,7 +478,7 @@ header {
         display: flex;
         gap: 8px;
         justify-content: center;
-		color: var(--text-color);
+        color: var(--tertiary-color);
         align-items: center;
         border-radius: 10px;
         padding: 5px 10px;
@@ -456,9 +501,8 @@ header {
     }
     .nav-link.active {
         background-color: var(--bg-color); 
-        color: var(--tertiary-color);
+        color: var(--text-color);
         border-color: var(--primary-color);
-        font-weight: bold;
     }
 
     footer {
@@ -571,6 +615,30 @@ header {
     }
 
     @media (max-width: 768px) {
+
+        header {
+            display: flex;
+            flex-direction: row;
+            position: fixed;
+            // max-width: 1600px; 
+            top: auto;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            // left: 50%; 
+            // transform: translateX(-50%); 
+            width: auto; 
+            margin: 0;
+            // background: var(--bg-color);
+            backdrop-filter: blur(40px);
+            justify-content: space-around;
+            align-items: center;
+            height: 4rem;
+            transition: all 0.3s ease;
+            user-select: none;
+            z-index: 1000;
+            border-bottom: 1px solid var(--secondary-color);
+        }
         span.logo {                
         display: none;
             h1 {

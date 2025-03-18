@@ -5,11 +5,13 @@
     import { fade, slide } from 'svelte/transition';
     import { drag } from '$lib/actions/drag';
     import { t } from 'stores/translation.store';
-    import { pb } from '$lib/pocketbase';
-    import { ArrowBigUp, Atom, BadgeCheck, Camera, Currency, Edit, Globe, History, LogOutIcon, Mail, MapPinned, SquareUserRound, UserCheck2Icon, X } from 'lucide-svelte';
+    import { ArrowBigUp, Atom, BadgeCheck, Camera, CircleX, Currency, Edit, Globe, History, LogOutIcon, Mail, MapPinned, SquareUserRound, UserCheck2Icon, X } from 'lucide-svelte';
     import { UserRound, Settings, Lock, ShieldAlert } from 'lucide-svelte';
-
-    import { currentUser } from '$lib/pocketbase';
+    import StyleSwitcher from '$lib/overlays/StyleSwitcher.svelte';
+    import { currentLanguage, languages } from 'stores/preferences.store';
+	import { currentTheme } from 'stores/theme.store';
+    import Footer from '$lib/containers/Footer.svelte';
+    import { pb, currentUser } from '$lib/pocketbase';
     import { createEventDispatcher } from 'svelte';
     import type { User } from '../../types/accounts';
 	import Dropdown from '$lib/containers/Dropdown.svelte';
@@ -115,7 +117,7 @@
     >
     <div class="actions">
         <button class="close-button" on:click={onClose}>
-            <LogOutIcon />
+            <CircleX />
         </button>
         <button class="logout-button" on:click={logout} transition:fade={{ duration: 300 }}>
             <LogOutIcon />
@@ -147,8 +149,6 @@
     <div class="tab-content">
         {#if activeTab === $t('nav.profileTabs.id')}
         <div class="column-content">
-
-         
             <div class="profile-info">
                 <div class="info-row2">
                     <div class="avatar-container">
@@ -287,7 +287,30 @@
 
             </div>  
         </div>
-
+        {:else if activeTab === $t('nav.profileTabs.preferences')}
+        <div class="preferences-container">
+            <h3>{$t('preferences.title')}</h3>
+            
+            <div class="preference-section">
+                <h4>{$t('preferences.appearance')}</h4>
+                <div class="preference-item">
+                    <StyleSwitcher />
+                </div>
+            </div>
+            
+            <div class="preference-section">
+                <h4>{$t('preferences.language')}</h4>
+                <div class="preference-item">
+                    <Dropdown
+                        options={languages}
+                        selectedValue={$currentLanguage}
+                        on:select={handleLanguageChange}
+                    />
+                </div>
+            </div>
+            
+            <Footer />
+        </div>
         {:else if activeTab === $t('nav.profileTabs.admin')}
         <div class="admin-container">
             <TabSelector

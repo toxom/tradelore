@@ -18,10 +18,10 @@ export function closeModal() {
 export const overlayStateAssets = writable<OverlayState>({
     wallet: { active: true, expanded: false },
     deposit: { active: true, expanded: false },
-    trends: { active: true, expanded: false },
+    // trends: { active: true, expanded: false },
     chart2: { active: true, expanded: false },
     info: { active: true, expanded: false },
-    feed: { active: true, expanded: false }
+    // feed: { active: true, expanded: false }
 });
 
 // Second range of overlays

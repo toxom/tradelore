@@ -432,6 +432,7 @@ $: filteredTokens = $localTokens.filter((token: Token) => {
         backdrop-filter: blur(100px);
         height: auto;
         gap: 1rem;
+        font-size: 1rem;
         width: auto;
         z-index: 3;
         overflow: auto;
@@ -770,6 +771,34 @@ $: filteredTokens = $localTokens.filter((token: Token) => {
                 padding: 0.5rem;
                 // border-bottom: 1px solid var(--secondary-color);
             }
+        }
+
+        @media (max-width: 768px) {
+            .pair-title {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                gap: 0.5rem;
+            span {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+
+
+                h2.base {
+                    font-size: 1.5rem;
+                }
+                h2.quote {
+                    font-weight: 200;
+                    font-size: 1.5rem;
+                    margin-left: 0.5rem;
+                }
+                h2.seperator {
+                    font-size: 1rem;
+                    font-weight: 200;
+                }
+            }
+        }
         }
 
 

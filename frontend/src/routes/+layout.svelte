@@ -3,10 +3,12 @@
     import { pb, currentUser } from '$lib/pocketbase';
     import { fly, fade, slide, scale, crossfade } from 'svelte/transition';
     import { cubicOut, quintOut } from 'svelte/easing';
-    import { X, Calculator, Camera, Bell, MapPin, CircleX, LogIn, User, LogOut, MessageCircle, Filter, FilterX, Compass, ArrowBigUp, ArrowUp } from 'lucide-svelte';
+    import { X, Calculator, Camera, Bell, MapPin, CircleX, LogIn, User, LogOut, MessageCircle, Filter, FilterX, Compass, ArrowBigUp, ArrowUp, Bot } from 'lucide-svelte';
 	import { Moon, Sun, Sunset, Sunrise, Focus, Bold, Gauge, Key, Bone } from 'lucide-svelte';
     import { Wallet, Landmark, CreditCard, BarChart, PieChart } from 'lucide-svelte';
     import Notifications from '$lib/overlays/NotificationsOverlay.svelte';
+    import Agents from '$lib/overlays/Agents.svelte';
+
     import Profile from '$lib/overlays/ProfileOverlay.svelte';
     import Auth from '$lib/overlays/Auth.svelte'
 	import Landing from '$lib/overlays/Landing.svelte'
@@ -40,6 +42,8 @@
     let visible = true;
 	let currentStyle = '';
 	let showNotifications = false;
+    let showAgents = false;
+
 	let showLanguageNotification = false;
 	let selectedLanguageName = '';
 	let placeholderText = '';
@@ -47,6 +51,7 @@
     let activeLink = '/'; 
     let overlayState = {
         notifications: false,
+        agents: false,
         reports: false,
         navigator: false,
         auth: false,
@@ -136,6 +141,7 @@
             showProfile = false;
 			showStyles = false;
 			showNotifications = false;
+            showAgents = false;
 			activeLink = ''; 
         }
     }
@@ -146,6 +152,11 @@
         !target.closest('.sidenav-notifications') && 
         !target.closest('.nav-link[data-overlay="notifications"]')) {
         overlayState.notifications = false;
+    }
+    if (overlayState.agents && 
+        !target.closest('.sidenav-agetns') && 
+        !target.closest('.nav-link[data-overlay="agents"]')) {
+        overlayState.agents = false;
     }
     
     // Check if styles is open and click is outside
@@ -208,23 +219,29 @@
                 </div>
             </button>          
             <button 
-                    class="nav-link" 
-                    class:active={overlayState.notifications} 
-                    data-overlay="notifications"
-                    on:click|stopPropagation={() => toggleOverlay('notifications')}
-                >
-                    <Bell size={20} />
-                </button>
-
-                {:else}
-
+                class="nav-link" 
+                class:active={overlayState.notifications} 
+                data-overlay="notifications"
+                on:click|stopPropagation={() => toggleOverlay('notifications')}
+            >
+                <Bell size={20} />
+            </button>
+            <button 
+                class="nav-link" 
+                class:active={overlayState.agents} 
+                data-overlay="agents"
+                on:click|stopPropagation={() => toggleOverlay('agents')}
+            >
+                <Bot size={20} />
+            </button>
+            {:else}
 			<StyleSwitcher />
 			<Dropdown
 				options={languages}
 				selectedValue={currentLang}
 				on:select={handleLanguageChange}
 			/>
-				{/if}
+			{/if}
 
 			<button 
                 class="nav-link" 
@@ -309,6 +326,18 @@
         transition:fly={{ x: 50, duration: 300 }}
     >
         <Notifications />
+        <button class="close-button" on:click={() => toggleOverlay('notifications')}>
+            <CircleX size={20} />
+        </button>
+    </div>
+    {/if}
+    {#if overlayState.agents}
+    <div 
+        class="sidenav sidenav-agents" 
+        on:click|stopPropagation={() => {}}
+        transition:fly={{ x: 50, duration: 300 }}
+    >
+        <Agents />
         <button class="close-button" on:click={() => toggleOverlay('notifications')}>
             <CircleX size={20} />
         </button>
@@ -538,6 +567,10 @@ header {
 		background: var(--bg-gradient-left);
         box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
         overflow-y: auto;
+
+        &.sidenav-agents {
+            background-color: red !important;
+        }
     }
     .overlay {
         position: absolute;
@@ -561,9 +594,11 @@ header {
 
     .sidenav {
         position: fixed;
-        top: 4.5rem;
+        top: 4rem;
         right: 0;
         bottom: 4.5rem;
+        max-width: 800px;
+        width: auto;
 		border-top-left-radius: 2rem;
 		border-bottom-left-radius: 2rem;
         box-shadow: -2px 0 5px rgba(219, 7, 7, 0.1);

@@ -69,8 +69,8 @@
                 return { y: -250, duration: 400, easing: cubicOut };
             case 'deposit':
                 return { y: -250, duration: 400, easing: cubicOut };
-            case 'trends':
-                return { x: 250, y: -250, duration: 400, easing: cubicOut };
+            // case 'trends':
+            //     return { x: 250, y: -250, duration: 400, easing: cubicOut };
             case 'chart2':
                 return { x: -250, duration: 400, easing: cubicOut };
             case 'info':
@@ -109,14 +109,13 @@
             />
         {/if}
 
-        {#if ['deposit', 'trends', 'chart2', 'info'].includes(name)}
+        {#if ['deposit', 'chart2', 'info'].includes(name)}
             <!-- Container for deposit, withdraw, chart2, and info -->
             <div class="financial-overlays-container">
                 <div 
                     class="overlay {name}-overlay" 
                     class:expanded={state.expanded}
                     class:deposit-expanded={name === 'deposit' && state.expanded}
-                    class:trends-expanded={name === 'trends' && state.expanded}
                     class:chart2-expanded={name === 'chart2' && state.expanded}
                     class:info-expanded={name === 'info' && state.expanded}
                     transition:fly={getCustomTransition(name)}
@@ -135,9 +134,9 @@
                             </div>
                         </div>
                         <Deposit />
-                    {:else if name === 'trends'}
+                    <!-- {:else if name === 'trends'} -->
                     
-                        <IcicleD3 />
+                        <!-- <IcicleD3 /> -->
                     {:else if name === 'chart2'}
                         <div class="overlay-header">
                             <div class="overlay-title">
@@ -182,15 +181,7 @@
                         </div>
                     </div>
                     <Wallet/>
-                {:else if name === 'feed'}
-                    <div class="overlay-header">
-                        <div class="overlay-title">
-                            <!-- <BotIcon size="2rem"/> -->
-                            <h1 class="overlay-header">{$t('agent.agents')}</h1>
-
-                        </div>
-                    </div>
-                    <Agents />
+                {:else if name === 'feed'} 
                 {/if}
             </div>
         {/if}

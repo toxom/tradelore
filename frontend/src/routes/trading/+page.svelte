@@ -183,7 +183,7 @@
         height: 8rem;
         top: 4rem;
         left: 0;
-        right: 0;
+        right: calc(500px + 1rem);
         bottom: calc(50% + 1rem);
         border: 1px solid transparent;
         border-radius: 2rem;
@@ -198,9 +198,9 @@
             width: auto;
 
             top: 4rem;
-            left: 4rem;
-            right: 4rem;
-            bottom: 8rem;
+            left: 0;
+            right: calc(500px + 1rem);
+            bottom: 0;
             overflow-x: hidden;
         overflow-y: scroll;
         scrollbar-width:2px;
@@ -228,10 +228,10 @@
     .history-overlay {
         top: auto;
         left: 0;
-        right: 500px;
-        bottom: 2rem;
+        right: calc(500px + 1rem);
+        bottom: 0;
         width: auto;
-        height: 20rem;
+        height: 10rem;
         overflow-y: scroll;
         scrollbar-width:2px;
         scrollbar-color: var(--tertiary-color) transparent;
@@ -242,7 +242,7 @@
         &.history-expanded {
             height: auto;
             width: auto;
-            top: 18rem;
+            top: 4rem;
             left: 0;
             right: 500px;
             bottom: 2rem;
@@ -259,10 +259,10 @@
         height: auto;
         border: 1px solid transparent; 
         &.chart-expanded {
-            top: 12rem;
-            right: 0;
+            top: 4rem;
+            right: calc(500px + 1rem);
             left: 0;
-            bottom: 2rem;
+            bottom: 0;
             height: auto;
             width: auto;
             z-index: 2000;
@@ -272,9 +272,9 @@
     }
     .order-overlay {
         height: auto;
-        width: 500px;
-        top: calc(50% + 2rem);
-        bottom:4rem;
+        width: calc(500px - 2rem);
+        top: calc(50% + 4rem);
+        bottom:0;
         right: 0;
         z-index: 1;
         color: var(--text-color);
@@ -290,10 +290,10 @@
         }
     }
     .book-overlay {
-        top: 15rem;
+        top: 4rem;
         right: 0;
         bottom: calc(50% - 4rem);
-        width: 500px;
+        width: calc(500px - 2rem);
         height: auto;
         overflow-y: scroll;
         scrollbar-width:2px;
@@ -305,8 +305,8 @@
         &.book-expanded {
             left: auto;
             right: 0;
-            top: 17rem;
-            bottom: 2rem;
+            top: 4rem;
+            bottom: 0;
 
             height: auto;
             width: 50%;
@@ -327,36 +327,36 @@
 
 
     @media (max-width: 1600px) {
-        .pairs-overlay {
-        width: auto;
-        height: 12rem;
-        left: 0;
-        right: 0;
-        top: 3rem;
-        bottom: auto;
-        &.pairs-expanded {
-            width: auto;
-            height: auto;
-            left: 0;
-            bottom: 4rem;
-        }
-    }
-    .history-overlay {
-        left: 0;
-        right: 20rem;
-        top: auto;
-        bottom: 4rem;
-        width: auto;
-        height: 20rem;
-        &.history-expanded {
-            width: auto;
-            height: auto;
-            top: 17rem;
-            left: 0;
-            right: 20rem;
-            bottom: 4rem;
-        }
-    }
+    //     .pairs-overlay {
+    //     width: auto;
+    //     height: 12rem;
+    //     left: 0;
+    //     right: 0;
+    //     top: 3rem;
+    //     bottom: auto;
+    //     &.pairs-expanded {
+    //         width: auto;
+    //         height: auto;
+    //         left: 0;
+    //         bottom: 4rem;
+    //     }
+    // }
+    // .history-overlay {
+    //     left: 0;
+    //     right: 20rem;
+    //     top: auto;
+    //     bottom: 4rem;
+    //     width: auto;
+    //     height: 20rem;
+    //     &.history-expanded {
+    //         width: auto;
+    //         height: auto;
+    //         top: 17rem;
+    //         left: 0;
+    //         right: 20rem;
+    //         bottom: 4rem;
+    //     }
+    // }
     // .progress-overlay {
     //     left: 0;
     //     right: auto;
@@ -372,54 +372,54 @@
     //         bottom: 14rem;
     //     }
     // }
-    .chart-overlay {
-        top: 17rem;
-        left:0;
-        right: 0;
-        bottom: 46rem;
-        height: auto;
-        &.chart-expanded {
-            top: 18rem;
-            right: 0;
-            left: 0;
-            bottom: 4rem;
-            height: auto;
-            width: auto;
-            z-index: 2000;
-            cursor: default;
-        }
-    }
-    .order-overlay {
-        width: auto;
-        height: 18rem;
-        bottom: 26rem;
-        left: 0;
-        right: 20rem;
-        top: auto;
-        &.order-expanded {
-            height: auto;
-            width: auto;
-            top: auto;
-            left: 0;
-            right: 20rem;
-            bottom: 4rem;
-            z-index: 2000;
-            cursor: default;
-        }
-    }
-    .book-overlay {
-        top: auto;
-        right: 0;
-        bottom: 4rem;
-        width: 18rem;
-        height: 40rem;
-        &.book-expanded {
-            width: 800px;
-            height: auto;
-            right: 0;
-            bottom: 4rem;
-        }
-    }
+    // .chart-overlay {
+    //     top: 17rem;
+    //     left:0;
+    //     right: 0;
+    //     bottom: 46rem;
+    //     height: auto;
+    //     &.chart-expanded {
+    //         top: 18rem;
+    //         right: 0;
+    //         left: 0;
+    //         bottom: 4rem;
+    //         height: auto;
+    //         width: auto;
+    //         z-index: 2000;
+    //         cursor: default;
+    //     }
+    // }
+    // .order-overlay {
+    //     width: auto;
+    //     height: 18rem;
+    //     bottom: 26rem;
+    //     left: 0;
+    //     right: 20rem;
+    //     top: auto;
+    //     &.order-expanded {
+    //         height: auto;
+    //         width: auto;
+    //         top: auto;
+    //         left: 0;
+    //         right: 20rem;
+    //         bottom: 4rem;
+    //         z-index: 2000;
+    //         cursor: default;
+    //     }
+    // }
+    // .book-overlay {
+    //     top: auto;
+    //     right: 0;
+    //     bottom: 4rem;
+    //     width: 18rem;
+    //     height: 40rem;
+    //     &.book-expanded {
+    //         width: 800px;
+    //         height: auto;
+    //         right: 0;
+    //         bottom: 4rem;
+    //     }
+    // }
 
     }
 
@@ -446,16 +446,17 @@
     .chart-overlay {
         top: 17rem;
         left: 0;
-        right: 0;
-        bottom: 45rem;
-        height: auto;
+        right: auto;
+        bottom: auto;
+        height: 30rem;
+        width: calc(50% - 4rem);
         &.chart-expanded {
             right: 0;
             left: 0;
-            top: 10rem;
+            top: 17rem;
             height: auto;
             width: auto;
-            bottom: 10rem;
+            bottom: 0;
             z-index: 2000;
             cursor: default;
         }
@@ -463,17 +464,19 @@
     .order-overlay {
         height: 23rem;
         width: auto;
-        bottom: 20rem;
+        bottom: auto;
+        height: 30rem;
+
         left: calc(50% - 1rem);
         right: 0;
-        top: auto;
+        top: 17rem;
         &.order-expanded {
-            height: 45rem;
-            width: auto;
-            top: auto;
-            left: 0;
             right: 0;
-            bottom: 4rem;
+            left: 0;
+            top: 17rem;
+            height: auto;
+            width: auto;
+            bottom: 0;
             z-index: 2000;
             cursor: default;
         }
@@ -481,9 +484,9 @@
 
     .pairs-overlay {
         width: auto;
-        height: 11rem;
+        height: 10rem;
         
-        top: 2rem;
+        top: 4rem;
         left: 0;
         right: 0;
         bottom: 4rem;
@@ -494,8 +497,8 @@
             height: auto;
             right: 0;
             left: 0;
-            top: 12rem;
-            bottom: 15rem;
+            top: 4rem;
+            bottom: 0;
         }
     }
 
@@ -503,32 +506,36 @@
         top: auto;
         left: 0;
         right: 0%;
-        bottom: 4rem;
-        width: auto;
+        bottom: 0;
+        width: calc(50% - 4rem);
         height: 14rem;
         &.history-expanded {
-            width: auto;
-            height: auto;
-            left: 0;
             right: 0;
+            left: 0;
             top: 17rem;
-            bottom: 4rem;
+            height: auto;
+            width: auto;
+            bottom: 0;
+            z-index: 2000;
+            cursor: default;
         }
     }
     .book-overlay {
-        height: 23rem;
-        width: auto;
-        bottom: 20rem;
-        right: calc(50% - 1rem);
-        left: 0;
+        height: 14rem;
+        width: calc(50% - 4rem);
+        bottom: 0;
+        right:0;
+        left: auto;
         top: auto;
         &.book-expanded {
-            width: auto;
-            height: auto;
-            left: 0;
             right: 0;
-            top: 18rem;
-            bottom: 4rem;
+            left: 0;
+            top: 17rem;
+            height: auto;
+            width: auto;
+            bottom: 0;
+            z-index: 2000;
+            cursor: default;
         }
     }
     // .button-text.visible {
@@ -582,36 +589,37 @@
     //     }
     // }
     .chart-overlay {
-        top: 16rem;
+        top: 12rem;
         left: 0;
         right: 0;
         bottom: auto;
-        height: 37rem;
+        width: auto;
+        height: 27rem;
         &.chart-expanded {
             right: 0;
             left: 0;
-            top: 16rem;
+            top: 12rem;
             height: auto;
             width: auto;
-            bottom: 2rem;
+            bottom: 4rem;
             z-index: 2000;
             cursor: default;
         }
     }
     .order-overlay {
-        height: 11rem;
+        height: 4rem;
         width: auto;
-        bottom: calc(50% - 14rem);
+        bottom:18rem;
         left: 0;
         right: 0;
         top: auto;
         &.order-expanded {
             height: auto;
             width: auto;
-            top: 50%;
+            top: 12rem;
             left: 0;
             right: 0;
-            bottom: 4rem;
+            bottom: 3rem;
             z-index: 2000;
             cursor: default;
         }
@@ -619,10 +627,8 @@
 
     .pairs-overlay {
         width: auto;
-        height: 10rem;
-        font-size: 0.8rem;
+        height: 6rem;
         top: 3rem;
-        border-radius: 0;
         left: 0;
         right: 0;
         bottom: auto;
@@ -633,8 +639,8 @@
             height: auto;
             right: 0;
             left: 0;
-            top: 12rem;
-            bottom: 15rem;
+            top: 3rem;
+            bottom: 3rem;
         }
     }
 
@@ -642,32 +648,36 @@
         top: auto;
         left: 0;
         right:0; 
-        bottom: 2rem;
+        bottom: 4rem;
         width: auto;
-        height: 15rem;
+        height: 4rem;
         &.history-expanded {
-            width: auto;
-            height: auto;
             right: 0;
             left: 0;
-            top: 12rem;
-            bottom: 2rem;
+            top: 3rem;
+            height: auto;
+            width: auto;
+            bottom: 3rem;
+            z-index: 2000;
+            cursor: default;
         }
     }
     .book-overlay {
         width: auto;
-        height: 21rem;
+        height: 4rem;
         top: auto;
         left: 0;
         right: 0;
-        bottom: 19rem;
+        bottom: 11rem;
         &.book-expanded {
-            width: auto;
-            height: auto;
             right: 0;
             left: 0;
-            top: 30rem;
-            bottom: 2rem;
+            top: 12rem;
+            height: auto;
+            width: auto;
+            bottom: 3rem;
+            z-index: 2000;
+            cursor: default;
         }
     }
     }

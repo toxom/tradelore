@@ -106,28 +106,7 @@
   
   <div class="financial-news-feed">
     <div class="header">
-      
-      <div class="categories">
-        {#each categories as category}
-          <button 
-            class="toggle-button {selectedCategory === category ? 'active' : ''}"
-            on:click={() => changeCategory(category)}
-          >
-            {category}
-          </button>
-        {/each}
-      </div>
-      
-      <div class="filters">
-        <div class="keywords">
-          {#each userKeywords as keyword}
-            <span class="keyword">
-              {keyword}
-              <button on:click={() => removeKeyword(keyword)} class="remove-btn">×</button>
-            </span>
-          {/each}
-        </div>
-        
+      <div class="filters">        
         <div class="keyword-input">
           <input 
             type="text" 
@@ -136,11 +115,27 @@
             on:keypress={(e) => e.key === 'Enter' && addKeyword()}
           />
           <button class="toggle-button" on:click={addKeyword}>Add</button>
+          <button class="toggle-button" on:click={fetchNews}>
+            Refresh
+          </button>
         </div>
-        
-        <button class="toggle-button" on:click={fetchNews}>
-          Refresh
-        </button>
+        <div class="keywords">
+          {#each userKeywords as keyword}
+            <span class="keyword">
+              {keyword}
+              <button on:click={() => removeKeyword(keyword)} class="remove-btn">×</button>
+            </span>
+          {/each}
+            {#each categories as category}
+              <button 
+                class="toggle-button {selectedCategory === category ? 'active' : ''}"
+                on:click={() => changeCategory(category)}
+              >
+                {category}
+              </button>
+            {/each}
+        </div>
+
       </div>
     </div>
     
@@ -197,7 +192,7 @@
      .financial-news-feed {
       margin: 0;
       margin-top: 1rem;
-      padding: 1rem;
+      padding: 0.5rem;
       overflow-y: scroll;
       scrollbar-color: var(--text-color) transparent;
       scrollbar-width: thin;
@@ -207,7 +202,7 @@
     }
     
     .header {
-      margin-bottom: 1.5rem;
+      margin-bottom: 0;
     }
     
     .header h2 {
@@ -246,8 +241,9 @@
     .filters {
       display: flex;
       flex-direction: column;
-      gap: 0.8rem;
-      background: var(--primary-color);
+      justify-content: center;
+
+      // background: var(--bg-gradient-fade);
       padding: 1rem;
       border-radius: 2rem;
 
@@ -257,32 +253,34 @@
       display: flex;
       flex-wrap: wrap;
       gap: 0.5rem;
-      margin-bottom: 0.5rem;
+      margin-top: 0.5rem;
     }
     
     .keyword {
       display: inline-flex;
       align-items: center;
       gap: 0.3rem;
-      background-color: #e9f5ff;
-      color: #0066cc;
+      background: var(--tertiary-color);
+      color: var(--placeholder-color);
       padding: 0.3rem 0.6rem;
-      border-radius: 4px;
-      font-size: 0.9rem;
+      border-radius: 1rem;
+      font-size: 0.8rem;
     }
     
     .remove-btn {
       background: none;
       border: none;
-      color: #0066cc;
+      color: red;
+      opacity: 0.5;
       cursor: pointer;
       font-weight: bold;
       padding: 0;
-      font-size: 1rem;
+      font-size: 1.5rem;
     }
     
     .keyword-input {
       display: flex;
+      justify-content: flex-start;
       gap: 0.5rem;
     }
     
@@ -290,10 +288,12 @@
       flex: 1;
       padding: 0.5rem;
       border: none;
+      max-width: auto;
       border-radius: 2rem;
       padding-left: 1rem;
-      font-size: 1rem;
-      background-color: var(--primary-color);
+      font-size: 1.25rem;
+      color: var(--text-color);
+      background-color: var(--tertiary-color);
     }
     
     button.toggle-button {
@@ -302,7 +302,7 @@
     
     
     .news-container {
-      margin-top: 1rem;
+      margin-top: 0;
       width: 100%;
     }
     

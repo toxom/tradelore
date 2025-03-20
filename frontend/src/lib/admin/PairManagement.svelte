@@ -7,6 +7,7 @@
     import { Loader2, Check, X, Plus, AlertTriangle } from 'lucide-svelte';
     import { fly, fade, slide, scale } from 'svelte/transition';
 
+    const allTokens = writable<Token[]>([]);
     const baseTokens = writable<Token[]>([]);
     
     const QUOTE_TOKENS = ['USDT', 'BTC', 'ETH'];
@@ -23,30 +24,31 @@
     let successMessage = '';
     let processingAction = false;
 
-    async function fetchBaseTokens() {
+    async function fetchTokens() {
         try {
-            const allTokens = await pb.collection('tokens').getFullList<Token>({
+            const fetchedTokens = await pb.collection('tokens').getFullList<Token>({
                 headers: {
                     Authorization: pb.authStore.token,
                 },
             });
             
-            // Filter out quote tokens and create a unique list by ticker
+            allTokens.set(fetchedTokens);
+            
+            // Create a unique list of tokens by ticker
             const uniqueTokenMap = new Map<string, Token>();
             
-            allTokens.forEach(token => {
-                // Skip if token is one of the quote tokens
-                if (!QUOTE_TOKENS.includes(token.ticker)) {
-                    if (!uniqueTokenMap.has(token.ticker)) {
-                        uniqueTokenMap.set(token.ticker, token);
-                    }
+            fetchedTokens.forEach(token => {
+                if (!uniqueTokenMap.has(token.ticker)) {
+                    uniqueTokenMap.set(token.ticker, token);
                 }
             });
             
+            // Include all tokens as potential base tokens
             baseTokens.set(Array.from(uniqueTokenMap.values()));
+            console.log('All tokens:', get(allTokens));
             console.log('Base tokens:', get(baseTokens));
         } catch (error) {
-            console.error('Failed to fetch base tokens:', error);
+            console.error('Failed to fetch tokens:', error);
             error = 'Failed to fetch tokens. Please try again.';
         }
     }
@@ -80,12 +82,27 @@
     // Select base token
     function selectBaseToken(ticker: string) {
         selectedBaseToken = ticker;
+        
+        // If the selected base token is the same as the currently selected quote token,
+        // reset the quote token selection or choose a different one
+        if (selectedQuoteToken === ticker) {
+            // Find the first available quote token that's not the same as the base token
+            const availableQuoteTokens = QUOTE_TOKENS.filter(qt => qt !== ticker);
+            selectedQuoteToken = availableQuoteTokens.length > 0 ? availableQuoteTokens[0] : '';
+        }
+        
         confirmingCreate = false;
         successMessage = '';
     }
 
     // Select quote token
     function selectQuoteToken(ticker: string) {
+        // Prevent selecting the same token as both base and quote
+        if (ticker === selectedBaseToken) {
+            error = 'Cannot select the same token for both base and quote';
+            return;
+        }
+        
         if (ticker !== selectedQuoteToken) {
             selectedQuoteToken = ticker;
             confirmingCreate = false;
@@ -93,9 +110,35 @@
         }
     }
 
+    // Get available quote tokens for the selected base token
+    function getAvailableQuoteTokens(): string[] {
+        if (!selectedBaseToken) return QUOTE_TOKENS;
+        
+        // Filter out the selected base token from quote options
+        return QUOTE_TOKENS.filter(token => token !== selectedBaseToken);
+    }
+
+    // Get available base tokens based on selected quote token
+    function getAvailableBaseTokens(): Token[] {
+        const tokens = get(baseTokens);
+        
+        // If quote token is selected, filter it out from base options
+        if (selectedQuoteToken) {
+            return tokens.filter(token => token.ticker !== selectedQuoteToken);
+        }
+        
+        return tokens;
+    }
+
     // Create new pair
     async function createPair() {
         if (!selectedBaseToken || !selectedQuoteToken) return;
+        
+        // Double-check that base and quote are not the same
+        if (selectedBaseToken === selectedQuoteToken) {
+            error = 'Cannot create a pair with the same token for base and quote';
+            return;
+        }
         
         processingAction = true;
         try {
@@ -156,7 +199,8 @@
 
     onMount(async () => {
         try {
-            await Promise.all([fetchBaseTokens(), fetchPairs()]);
+            // Replace fetchBaseTokens with fetchTokens
+            await Promise.all([fetchTokens(), fetchPairs()]);
         } catch (e) {
             console.error('Error in onMount:', e);
             error = 'Failed to initialize. Please refresh the page.';

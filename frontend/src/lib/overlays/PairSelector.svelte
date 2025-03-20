@@ -1,9 +1,11 @@
 <script lang="ts">
     import { onMount } from 'svelte';
-    import { get } from 'svelte/store'; 
-    import { pb } from '$lib/pocketbase';
+    import { get, writable } from 'svelte/store';   
+    import { pb, currentUser} from '$lib/pocketbase';
+    
     import { Search, Star, ArrowLeft } from 'lucide-svelte';
     import type { Token } from 'types/walletTypes';
+    import type { User } from 'types/accounts';
     import type { Pair } from 'types/orderTypes';
     import { tokens as tokensStore } from 'clients/tokenClient';
     import { 
@@ -16,58 +18,123 @@
         favoritePairIds,
         initOrderData
     } from 'stores/orderStore';
+    let tokensWithActivePairsCache = new Map<string, boolean>();
 
     let filteredTokens: Token[] = [];
     let errorMessage = '';
     let searchQuery = '';
     let tokenPairs: Pair[] = [];
     
-    let tabs = ['All', 'Favorites', 'Custom'];
+    let tabs = ['All', 'Favorites'];
     let activeTab = 'All';
-    
+    let initialized = false;
+
 
     function handleTabClick(tab: string) {
         activeTab = tab;
         filterTokens();
     }
-
-    function filterTokens() {
-    if ($localTokens.length === 0) return;
-    
-    // First filter by search query and exclude USDT and USDC
-    let filtered = $localTokens.filter((token: Token) => { // Explicit type for token
-        // Exclude USDT and USDC by ticker
-        if (token.ticker.toUpperCase() === 'USDT' || token.ticker.toUpperCase() === 'USDC') {
-            return false;
+    function hasActivePairs(token: Token): boolean {
+        if (tokensWithActivePairsCache.has(token.tokenId)) {
+            return tokensWithActivePairsCache.get(token.tokenId);
         }
         
-        return token.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-               token.ticker.toLowerCase().includes(searchQuery.toLowerCase()) ||
-               token.network.toLowerCase().includes(searchQuery.toLowerCase());
-    });
-    
-    // Then filter by active tab
-    if (activeTab === 'Favorites') {
-        filtered = filtered.filter((token: Token) => { // Explicit type for token
-            const favoriteIds = get(favoriteTokenIds); // Get current value of the store
-            return favoriteIds.has(token.tokenId);
-        });
-    } else if (activeTab === 'Custom') {
-        // Add custom tab filtering logic here
+        const tokenPairs = getPairsForToken(token.ticker);
+        const hasActive = tokenPairs.some(pair => pair.is_active === true);
+        
+        tokensWithActivePairsCache.set(token.tokenId, hasActive);
+        
+        return hasActive;
     }
-    
-    filteredTokens = filtered;
-}
+
+    function filterTokens() {
+        if ($localTokens.length === 0) return;
+        
+        // First filter by search query and exclude USDT and USDC
+        let filtered = $localTokens.filter((token: Token) => {
+            // Exclude USDT and USDC by ticker
+            if (token.ticker.toUpperCase() === 'USDT' || token.ticker.toUpperCase() === 'USDC') {
+                return false;
+            }
+            
+            // Only include tokens that have at least one active pair
+            if (!hasActivePairs(token)) {
+                return false;
+            }
+            
+            return token.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                token.ticker.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                token.network.toLowerCase().includes(searchQuery.toLowerCase());
+        });
+        
+        // Then filter by active tab
+        if (activeTab === 'Favorites') {
+            filtered = filtered.filter((token: Token) => {
+                const favoriteIds = get(favoriteTokenIds);
+                return favoriteIds.has(token.tokenId);
+            });
+        } else if (activeTab === 'Custom') {
+            // Add custom tab filtering logic here
+        }
+        
+        filteredTokens = filtered;
+    }
 
     function handleSearch(event: Event) {
         searchQuery = (event.target as HTMLInputElement).value;
         filterTokens();
     }
 
-    function toggleFavorite(tokenId: string) {
+    async function toggleFavorite(tokenId: string) {
+    // First update local state for immediate UI feedback
+    let didAdd = false;
+    
+    favoriteTokenIds.update(ids => {
+        const newIds = new Set(ids); 
+        if (newIds.has(tokenId)) {
+            newIds.delete(tokenId);
+            didAdd = false;
+        } else {
+            newIds.add(tokenId);
+            didAdd = true;
+        }
+        return newIds;
+    });
+    
+    if (activeTab === 'Favorites') {
+        filterTokens();
+    }
+    
+    try {
+        if (!pb.authStore.isValid) {
+            console.warn("User not authenticated, token favorite changes will not persist");
+            return;
+        }
+        
+        const userId = pb.authStore.model.id;
+        const user = await pb.collection('users').getOne(userId);
+        
+        // Get current token favorites or initialize empty array
+        let userFavoriteTokens = user.favoriteTokens || [];
+        
+        // Update the favorites array based on the action we just performed
+        if (didAdd && !userFavoriteTokens.includes(tokenId)) {
+            userFavoriteTokens.push(tokenId);
+        } else if (!didAdd) {
+            userFavoriteTokens = userFavoriteTokens.filter(id => id !== tokenId);
+        }
+        
+        await pb.collection('users').update(userId, {
+            favoriteTokens: userFavoriteTokens
+        });
+        
+        console.log('User token favorites updated in database');
+    } catch (error) {
+        console.error('Failed to update token favorites in database:', error);
+        
         favoriteTokenIds.update(ids => {
-            const newIds = new Set(ids); 
-            if (newIds.has(tokenId)) {
+            const newIds = new Set(ids);
+            if (didAdd) {
                 newIds.delete(tokenId);
             } else {
                 newIds.add(tokenId);
@@ -79,19 +146,82 @@
             filterTokens();
         }
     }
-
-    function togglePairFavorite(pairId: string) {
+}
+export function initFavorites() {
+    if (pb.authStore.isValid && pb.authStore.model) {
+        const user = pb.authStore.model as User;
+        
+        // Initialize pair favorites
+        const savedPairFavorites = user.favoritePairs || [];
+        favoritePairIds.set(new Set(savedPairFavorites));
+        
+        // Initialize token favorites
+        const savedTokenFavorites = user.favoriteTokens || [];
+        favoriteTokenIds.set(new Set(savedTokenFavorites));
+        
+        console.log('Initialized favorites from user data');
+    } else {
+        favoritePairIds.set(new Set());
+        favoriteTokenIds.set(new Set());
+    }
+}
+    async function togglePairFavorite(pairId: string) {
+        // First update local state for immediate UI feedback
+        let didAdd = false;
+        
         favoritePairIds.update(ids => {
             const newIds = new Set(ids); 
             if (newIds.has(pairId)) {
                 newIds.delete(pairId);
+                didAdd = false;
             } else {
                 newIds.add(pairId);
+                didAdd = true;
             }
             return newIds;
         });
+        
+        // Then sync with PocketBase
+        try {
+            if (!pb.authStore.isValid) {
+                console.warn("User not authenticated, favorite changes will not persist");
+                return;
+            }
+            
+            const userId = pb.authStore.model.id;
+            const user = await pb.collection('users').getOne(userId);
+            
+            // Get current favorites or initialize empty array
+            let userFavorites = user.favoritePairs || [];
+            
+            // Update the favorites array based on the action we just performed
+            if (didAdd && !userFavorites.includes(pairId)) {
+                userFavorites.push(pairId);
+            } else if (!didAdd) {
+                userFavorites = userFavorites.filter(id => id !== pairId);
+            }
+            
+            // Update user record in PocketBase
+            await pb.collection('users').update(userId, {
+                favoritePairs: userFavorites
+            });
+            
+            console.log('User favorites updated in database');
+        } catch (error) {
+            console.error('Failed to update favorites in database:', error);
+            
+            // Revert UI state if the server update failed
+            favoritePairIds.update(ids => {
+                const newIds = new Set(ids);
+                if (didAdd) {
+                    newIds.delete(pairId);
+                } else {
+                    newIds.add(pairId);
+                }
+                return newIds;
+            });
+        }
     }
-
 
     function backToTokenList() {
         selectedPair.set(null); // Use set method
@@ -107,30 +237,32 @@
     }
 
     export async function fetchTokenParents() {
-        try {
-            const allTokens = await pb.collection('tokens').getFullList<Token>({
-                headers: {
-                    Authorization: pb.authStore.token,
-                },
-            });
-            
-            const tokenMap = new Map<string, Token>();
-            
-            allTokens.forEach(token => {
-                if (!tokenMap.has(token.tokenId)) {
-                    tokenMap.set(token.tokenId, token);
-                }
-            });
-            
-            localTokens.set(Array.from(tokenMap.values())); 
-            filteredTokens = get(localTokens); 
-            
-            console.log('Fetched unique tokens:', get(localTokens));
-        } catch (error) {
-            console.error('Failed to fetch unique tokens:', error);
-            errorMessage = 'Failed to fetch unique tokens. Check your permissions.';
-        }
+    try {
+        const allTokens = await pb.collection('tokens').getFullList<Token>({
+            headers: {
+                Authorization: pb.authStore.token,
+            },
+        });
+        
+        // Use tokenId as the unique identifier, not id
+        const tokenMap = new Map<string, Token>();
+        
+        allTokens.forEach(token => {
+            // Only add if not already in the map or replace with newer version
+            if (!tokenMap.has(token.tokenId) || new Date(token.updated) > new Date(tokenMap.get(token.tokenId).updated)) {
+                tokenMap.set(token.tokenId, token);
+            }
+        });
+        
+        localTokens.set(Array.from(tokenMap.values())); 
+        filteredTokens = get(localTokens); 
+        
+        console.log('Fetched unique tokens:', get(localTokens));
+    } catch (error) {
+        console.error('Failed to fetch unique tokens:', error);
+        errorMessage = 'Failed to fetch unique tokens. Check your permissions.';
     }
+}
 
     export async function fetchPairs() {
         try {
@@ -160,30 +292,21 @@
     }
 
     onMount(async () => {
-        console.log('PairSelector mounted, initializing data');
-        await initOrderData();
-    });
+    console.log('PairSelector mounted, initializing data');
+    await initOrderData();
     
-    // Log when pair selection changes for debugging
-    selectedPair.subscribe(pair => {
-        console.log('PairSelector: selectedPair changed to', pair);
-    });
-    
-$: filteredTokens = $localTokens.filter((token: Token) => {
-    // Exclude USDT and USDC
-    if (token.ticker.toUpperCase() === 'USDT' || token.ticker.toUpperCase() === 'USDC') {
-        return false;
+    // Check if we have favorites and set the tab accordingly
+    const tokenFavorites = get(favoriteTokenIds);
+    if (tokenFavorites.size > 0) {
+        console.log('Found favorite tokens, setting Favorites tab as active');
+        activeTab = 'Favorites';
+    } else {
+        console.log('No favorites found, showing All tab');
+        activeTab = 'All';
     }
     
-    const matchesSearch = !searchQuery || 
-        token.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        token.ticker.toLowerCase().includes(searchQuery.toLowerCase());
-        
-    if (activeTab === 'Favorites') {
-        return matchesSearch && $favoriteTokenIds.has(token.tokenId);
-    }
-    
-    return matchesSearch;
+    // Make sure to filter tokens based on the active tab
+    filterTokens();
 });
 </script>
 
@@ -348,10 +471,13 @@ $: filteredTokens = $localTokens.filter((token: Token) => {
                                                     {#each tokenPairs as pair}
                                                         {@const pairName = `${pair.base_token}/${pair.quote_token}`}
                                                         <button 
-                                                            class="pair-button {pair.is_active ? 'active' : 'inactive'}"
+                                                            class="pair-button {pair.is_active ? 'active' : 'inactive'} {$favoritePairIds.has(pair.id) ? 'favorite' : ''}"
                                                             on:click={() => handleSelectPair(pair)}
                                                             title={pair.is_active ? 'Active' : 'Inactive'}
                                                         >
+                                                            {#if $favoritePairIds.has(pair.id)}
+                                                                <Star size={14} class="favorite-icon" />
+                                                            {/if}
                                                             {pairName}
                                                         </button>
                                                     {/each}
@@ -486,6 +612,7 @@ $: filteredTokens = $localTokens.filter((token: Token) => {
         background: transparent;
         gap: 0.5rem;
         width: auto;
+        padding: 0.5rem 1rem;
         border: none;
         color: var(--tertiary-color);
         cursor: pointer;
@@ -623,12 +750,22 @@ $: filteredTokens = $localTokens.filter((token: Token) => {
                 background: rgba(40, 167, 69, 0.3);
             }
         }
-        
+
+        &.favorite {
+            background-color: rgba(255, 215, 0, 0.1);
+            border-color: rgba(255, 215, 0, 0.5);
+            color: rgba(255, 215, 0, 1);
+            font-weight: 800;
+            padding-left: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
         &.inactive {
             background: rgba(220, 53, 69, 0.2);
             color: var(--danger-color, #dc3545);
             border: 1px solid var(--danger-color, #dc3545);
-            
+            display: none;
             &:hover {
                 background: rgba(220, 53, 69, 0.3);
             }

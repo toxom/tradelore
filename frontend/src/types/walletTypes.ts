@@ -7,12 +7,12 @@ export interface Wallet {
   network: string;
   currency: string;
   balance: number | string;
+  balanceReserved: number | string;
   agentSpendLimit: number | string;
   agentId: string[];
   created: string;
   updated: string;
   price?: number; 
-
 }
 
 export interface Token {
@@ -27,4 +27,12 @@ export interface Token {
   isActive: boolean;
   created_at: string;
   updated_at: string;
+}
+
+export interface ConversionRates {
+  usd: number;
+  eur: number;
+  btc: number;
+  eth: number;
+  [key: string]: number;
 }

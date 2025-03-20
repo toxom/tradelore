@@ -90,85 +90,13 @@
     }
 
     @media (max-width: 1600px) {
-        .metric {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            margin-bottom:4rem;
-            text-align: left;
-            & .value {
-                font-size: 2.5rem;
-            font-weight: 600;
-            }
-            & .label {
-                font-size: 2rem;
-            }
-            & .conversion {
-                font-size: 2rem;
-                font-style: italic;
-            }
-        }
+
     }
     @media (max-width: 1000px) {
-            .basic-container {
-            display: flex;
-            flex-direction: column;
-            align-items: top;
-            gap: 2rem;
-            width: 100%;
-            height: 100%;
-            margin-bottom: rem;
-        }
-        .metric {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-            gap: 0;
-            margin: 0;
-            text-align: center;
-            & .value {
-                font-size: 2rem;
-            font-weight: 600;
-            }
-            & .label {
-                font-size: 1.5rem;
-            }
-            & .conversion {
-                font-size: 1.5rem;
-                font-style: italic;
-            }
-        }
+            
     }
     @media (max-width: 1000px) {
-        .basic-container {
-            display: flex;
-            flex-direction: column;
-            align-items: top;
-            gap: 1rem;
-            width: 100%;
-            height: auto;
-            margin-bottom: rem;
-        }
-        .metric {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-            height: auto;
-            gap: 0;
-            margin: 0;
-            text-align: center;
-            & .value {
-                font-size: 2rem;
-            font-weight: 600;
-            }
-            & .label {
-                font-size: 1.5rem;
-            }
-            & .conversion {
-                font-size: 1.5rem;
-                font-style: italic;
-            }
-        }
+        
     }
 </style>
 

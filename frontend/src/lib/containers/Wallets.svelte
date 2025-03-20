@@ -10,7 +10,8 @@
     addNewWallet,
     wallets,
     fetchWallets,
-    updateWallet
+    updateWallet,
+    getTotalBalanceForToken
   } from 'clients/balanceClient';
   import type { Token, Wallet } from 'types/walletTypes';
   import { spring, tweened } from 'svelte/motion';
@@ -132,19 +133,19 @@ function toggleAgentExpansion(tokenId) {
     return tokens.filter((token) => token.tokenId === tokenId);
   }
 
-  function getTotalBalanceForToken(tokenId: string): number {
-    const userWallets = get(wallets).filter(
-      wallet => wallet.userId === get(currentUser).id && wallet.tokenId === tokenId
-    );
+  // function getTotalBalanceForToken(tokenId: string): number {
+  //   const userWallets = get(wallets).filter(
+  //     wallet => wallet.userId === get(currentUser).id && wallet.tokenId === tokenId
+  //   );
     
-    return userWallets.reduce((total, wallet) => {
-      const walletBalance = typeof wallet.balance === 'string' 
-        ? parseFloat(wallet.balance) || 0 
-        : wallet.balance || 0;
+  //   return userWallets.reduce((total, wallet) => {
+  //     const walletBalance = typeof wallet.balance === 'string' 
+  //       ? parseFloat(wallet.balance) || 0 
+  //       : wallet.balance || 0;
       
-      return total + walletBalance;
-    }, 0);
-  }
+  //     return total + walletBalance;
+  //   }, 0);
+  // }
 
   // Function to get all wallets for a token
   function getWalletsForToken(tokenId: string): Wallet[] {
@@ -922,27 +923,7 @@ onMount(async () => {
           gap: 1rem;
           grid-template-columns: repeat(2, 1fr);
         }
-        .metric {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            margin-bottom:4rem;
-            text-align: left;
-            & .value {
-                font-size: 2.5rem;
-            font-weight: 600;
-            color: #28a745; /* Green for positive values */
-            }
-            & .label {
-                font-size: 2rem;
-                color: #666;
-            }
-            & .conversion {
-                font-size: 2rem;
-                color: #666;
-                font-style: italic;
-            }
-        }
+
     }
     @media (max-width: 1000px) {
             .basic-container {
@@ -957,29 +938,7 @@ onMount(async () => {
 
 
 
-        .metric {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-            height: auto;
-            gap: 0;
-            margin: 0;
-            text-align: center;
-            & .value {
-                font-size: 2rem;
-            font-weight: 600;
-            color: #28a745; /* Green for positive values */
-            }
-            & .label {
-                font-size: 1.5rem;
-                color: #666;
-            }
-            & .conversion {
-                font-size: 1.5rem;
-                color: #666;
-                font-style: italic;
-            }
-        }
+
 
         .container {
           grid-template-columns: repeat(1, 1fr);
@@ -1023,28 +982,7 @@ onMount(async () => {
 
         background: transparent;
       }
-        .metric {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-            gap: 0;
-            margin: 0;
-            text-align: center;
-            & .value {
-                font-size: 2rem;
-            font-weight: 600;
-            color: #28a745; /* Green for positive values */
-            }
-            & .label {
-                font-size: 1.5rem;
-                color: #666;
-            }
-            & .conversion {
-                font-size: 1.5rem;
-                color: #666;
-                font-style: italic;
-            }
-        }
+
     }
     @media (max-width: 768px) {
 

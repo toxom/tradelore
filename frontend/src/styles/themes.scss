@@ -1438,7 +1438,7 @@ th:nth-child(5), td:nth-child(5) {
 .info-overlay.info-expanded {
 width: auto;
 height: auto;
-justify-content: center;
+justify-content: flex-start;
 align-items: center;
 top: 4rem;
 left: 4rem;

@@ -1,8 +1,9 @@
 import { writable, get, derived } from 'svelte/store';
-import { pb } from '$lib/pocketbase';
+import { pb, currentUser } from '$lib/pocketbase';
 import type { Pair } from 'types/orderTypes';
 import type { Token, Wallet } from 'types/walletTypes';
 import type { RecordModel } from 'pocketbase';
+import type { User } from 'types/accounts';
 
 export const pairs = writable<Pair[]>([]);
 export const selectedPair = writable<Pair | null>(null);
@@ -11,6 +12,39 @@ export const wallets = writable<Wallet[]>([]);
 export const favoriteTokenIds = writable<Set<string>>(new Set());
 export const favoritePairIds = writable<Set<string>>(new Set());
 export const isDataLoaded = writable<boolean>(false);
+
+export async function initFavorites() {
+    console.log('Initializing favorites from user data');
+    
+    if (!pb.authStore.isValid) {
+        console.log('User not authenticated, clearing favorites');
+        favoriteTokenIds.set(new Set());
+        favoritePairIds.set(new Set());
+        return;
+    }
+    
+    try {
+        // Fetch the latest user data to ensure we have current favorites
+        const userId = pb.authStore.model.id;
+        const user = await pb.collection('users').getOne(userId);
+        
+        // Initialize token favorites
+        const savedTokenFavorites = user.favoriteTokens || [];
+        console.log('Loading token favorites:', savedTokenFavorites);
+        favoriteTokenIds.set(new Set(savedTokenFavorites));
+        
+        // Initialize pair favorites
+        const savedPairFavorites = user.favoritePairs || [];
+        console.log('Loading pair favorites:', savedPairFavorites);
+        favoritePairIds.set(new Set(savedPairFavorites));
+        
+        console.log('Favorites initialized successfully');
+    } catch (error) {
+        console.error('Failed to load favorites:', error);
+        favoriteTokenIds.set(new Set());
+        favoritePairIds.set(new Set());
+    }
+}
 
 export async function loadWallets() {
     try {
@@ -195,6 +229,8 @@ export async function initOrderData() {
     isDataLoaded.set(false);
     
     try {
+        await initFavorites();
+        
         await Promise.all([
             loadPairs(),
             loadTokens(),
@@ -212,6 +248,8 @@ export async function initOrderData() {
         
         isDataLoaded.set(true);
         console.log('Order data initialization complete. Data loaded:', true);
+        console.log('Token favorites loaded:', get(favoriteTokenIds).size);
+        console.log('Pair favorites loaded:', get(favoritePairIds).size);
     } catch (error) {
         console.error('Error initializing order data:', error);
         isDataLoaded.set(false);

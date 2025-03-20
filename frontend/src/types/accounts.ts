@@ -23,6 +23,9 @@ export interface User {
   role: string;
   totpSecret?: string; 
   factorValidated?: boolean; 
+  favoritePairs?: string[];
+  favoriteTokens?: string[];
+
 }
 
 

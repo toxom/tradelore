@@ -1,6 +1,6 @@
 import { pb } from '$lib/pocketbase';
 import { predefinedTokens } from 'utils/constants'; 
-import type { Token } from 'types/walletTypes';
+import type { Token, ConversionRates } from 'types/walletTypes';
 
 export interface TokenPrice {
   id: string;
@@ -10,6 +10,12 @@ export interface TokenPrice {
   priceChangePercentage24h?: number;
   lastUpdated: string;
 }
+
+let conversionRatesCache: {
+  [tokenId: string]: ConversionRates;
+} = {};
+let lastFetchTime = 0;
+const CACHE_DURATION = 60 * 60 * 1000;
 
 export let errorMessage = '';
 
@@ -303,4 +309,60 @@ export async function fetchTokenPrices(tokens: Token[]): Promise<TokenPrice[]> {
     console.error("Error in fetchTokenPrices:", error);
     return [];
   }
+}
+
+export async function fetchConversionRates(tokenIds: string[]): Promise<{[tokenId: string]: ConversionRates}> {
+  const currentTime = Date.now();
+  
+  if (currentTime - lastFetchTime < CACHE_DURATION && Object.keys(conversionRatesCache).length > 0) {
+    const missingTokens = tokenIds.filter(id => !conversionRatesCache[id]);
+    if (missingTokens.length === 0) {
+      return conversionRatesCache;
+    }
+  }
+  
+  try {
+    const idsParam = tokenIds.join(',');
+    const vsCurrencies = 'usd,eur,btc,eth';
+    
+    const response = await fetch(
+      `https://api.coingecko.com/api/v3/simple/price?ids=${idsParam}&vs_currencies=${vsCurrencies}`
+    );
+    
+    if (!response.ok) {
+      console.error(`Error fetching conversion rates: ${response.status} ${response.statusText}`);
+      return conversionRatesCache; // Return cached data on error
+    }
+    
+    const data = await response.json();
+    
+    // Update the cache with new rates
+    for (const tokenId in data) {
+      conversionRatesCache[tokenId] = data[tokenId];
+    }
+    
+    lastFetchTime = currentTime;
+    return conversionRatesCache;
+    
+  } catch (error) {
+    console.error("Error in fetchConversionRates:", error);
+    return conversionRatesCache; // Return cached data on error
+  }
+}
+
+export function convertAmount(amount: number, fromTokenId: string, toCurrency: string): number {
+  if (!conversionRatesCache[fromTokenId]) {
+    console.warn(`No conversion rates found for ${fromTokenId}`);
+    return amount;
+  }
+  
+  const fromToUsd = conversionRatesCache[fromTokenId].usd || 1;
+  
+  if (toCurrency === 'usd') {
+    return amount * fromToUsd;
+  }
+  
+  const usdToTarget = 1 / (conversionRatesCache[toCurrency]?.usd || 1);
+  
+  return amount * fromToUsd * usdToTarget;
 }

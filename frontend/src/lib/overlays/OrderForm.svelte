@@ -3,15 +3,30 @@
   import { ArrowDownFromLine, ArrowDownToLine, ArrowUpFromDot, ArrowUpFromLine, ArrowUpFromLineIcon } from 'lucide-svelte';
   import { writable, get } from 'svelte/store';
   import type { Orderbook } from 'types/orderTypes';
-  import { pb } from '$lib/pocketbase';
-
-  import { selectedPair, pairs, availableBalances } from 'stores/orderStore';
+  import { pb, currentUser} from '$lib/pocketbase';
+  import { 
+  getTotalBalanceForToken, 
+  getTotalBalanceForTicker, 
+  getTotalBalanceForSymbol, 
+  getTotalBalanceForCurrency
+} from 'clients/balanceClient';
+import {
+  wallets,
+  selectedWallet,
+  fetchWallets,
+  createWallet,
+  updateWallet,
+  deleteWallet,
+} from 'stores/walletStore';
+import { selectedPair, pairs, availableBalances } from 'stores/orderStore';
   
   export let availableBalance: number = 0;
   export let symbol: string = 'BTC/USDT';
   export let baseCurrency: string = 'BTC';
   export let quoteCurrency: string = 'USDT';
 
+  let baseTokenId: string = '';
+  let quoteTokenId: string = '';
   let isSelected = false;
 
   const orderType = writable<'limit' | 'market'>('limit');
@@ -19,41 +34,44 @@
   const price = writable<number | null>(null);
   const amount = writable<number>(0);
   const sliderPercentage = writable<number>(0);
+    
+  function updateDisplayedBalance() {
+    if ($type === 'buy') {
+      availableBalance = getTotalBalanceForTicker(quoteCurrency);
+      console.log(`Buy balance for ${quoteCurrency}: ${availableBalance}`);
+    } else if ($type === 'sell') {
+      availableBalance = getTotalBalanceForTicker(baseCurrency);
+      console.log(`Sell balance for ${baseCurrency}: ${availableBalance}`);
+    } else {
+      availableBalance = 0;
+    }
+  } 
     const unsubscribePair = selectedPair.subscribe(pair => {
-        if (pair) {
-            console.log('OrderForm: selectedPair changed to', pair);
-            baseCurrency = pair.base_token;
-            quoteCurrency = pair.quote_token;
-            symbol = `${baseCurrency}/${quoteCurrency}`;
-            
-            // Reset form values when pair changes
-            price.set(null);
-            amount.set(0);
-            sliderPercentage.set(0);
-        } else {
-            console.log('OrderForm: selectedPair is null');
-        }
-    });
-  // Function to get pairs for a token (similar to PairSelector)
-  function getPairsForToken(ticker: string) {
-      return get(pairs).filter(pair => 
-          pair.base_token === ticker || pair.quote_token === ticker
-      );
-  }
-  
-  selectedPair.subscribe(pair => {
-      if (pair) {
-          baseCurrency = pair.base_token;
-          quoteCurrency = pair.quote_token;
-          symbol = `${baseCurrency}/${quoteCurrency}`;
-          
-          // Reset form values when pair changes
-          price.set(null);
-          amount.set(0);
-          sliderPercentage.set(0);
-      }
+    if (pair) {
+      baseCurrency = pair.base_token;
+      quoteCurrency = pair.quote_token;
+      symbol = `${baseCurrency}/${quoteCurrency}`;
+      
+      updateDisplayedBalance();
+      
+      price.set(null);
+      amount.set(0);
+      sliderPercentage.set(0);
+    }
   });
+
+
   
+  const unsubscribeType = type.subscribe(() => {
+    updateDisplayedBalance();
+  });
+
+
+  function getPairsForToken(ticker: string) {
+    return get(pairs).filter(pair => 
+      pair.base_token === ticker || pair.quote_token === ticker
+    );
+  }
 
   function handleTabChange(type: 'limit' | 'market') {
     orderType.set(type);
@@ -62,28 +80,27 @@
     }
   }
 
-function updateAmountFromSlider() {
-    const newAmount = (maxAmount * $sliderPercentage) / 100;
-    
-    amount.set(parseFloat(newAmount.toFixed(4)));
-}
+  
 
-function updateSliderFromAmount() {
+  function updateAmountFromSlider() {
+    const newAmount = (maxAmount * $sliderPercentage) / 100;
+    amount.set(parseFloat(newAmount.toFixed(4)));
+  }
+
+  function updateSliderFromAmount() {
     if (maxAmount === 0) {
-        sliderPercentage.set(0);
-        return;
+      sliderPercentage.set(0);
+      return;
     }
     const newPercentage = ($amount / maxAmount) * 100;
     sliderPercentage.set(Math.min(100, Math.max(0, parseFloat(newPercentage.toFixed(0)))));
-}
+  }
 
-function setPercentage(percent: number) {
+  function setPercentage(percent: number) {
     sliderPercentage.set(percent);
-    
     const newAmount = (maxAmount * percent) / 100;
     amount.set(parseFloat(newAmount.toFixed(4)));
-}
-
+  }
 
   function handleTypeChange(newType: 'buy' | 'sell') {
     type.set(newType);
@@ -102,7 +119,6 @@ function setPercentage(percent: number) {
     const currentPair = get(selectedPair);
     const now = new Date().toISOString();
     
-    // Create an expiration date 30 days from now
     const expiryDate = new Date();
     expiryDate.setDate(expiryDate.getDate() + 30);
     
@@ -121,101 +137,121 @@ function setPercentage(percent: number) {
   }
   
   async function handleSubmit() {
-        const currentPair = get(selectedPair);
-        
-        if (!pb.authStore.isValid) {
-            alert('You must be logged in to place orders');
-            return;
-        }
-        
-        if (!currentPair) {
-            alert('Please select a trading pair first');
-            return;
-        }
-        
-        if ($amount <= 0) {
-            alert('Please enter an amount greater than 0');
-            return;
-        }
-        
-        if ($orderType === 'limit' && !$price) {
-            alert('Please enter a price for limit orders');
-            return;
-        }
-        
-        try {
-            const orderData = {
-                ...createOrderObject(),
-                type: $type,
-                user: pb.authStore.model?.id,
-                symbol: symbol,
-                total: orderValue
-            };
-            
-            console.log('Submitting order:', orderData);
-            
-            // Create order in Pocketbase
-            const createdOrder = await pb.collection('orders').create(orderData);
-            console.log('Order created successfully:', createdOrder);
-            
-            // Reset form after submission
-            amount.set(0);
-            sliderPercentage.set(0);
-            if ($orderType === 'limit') {
-                price.set(null);
-            }
-            
-            alert('Order placed successfully!');
-        } catch (error) {
-            console.error('Error creating order:', error);
-            alert('Failed to place order. Please try again.');
-        }
-    }
-
-    function handleAmountChange() {
-    // Ensure amount doesn't exceed maxAmount
-    if ($amount > maxAmount) {
-        amount.set(maxAmount);
-    }
+  const currentPair = get(selectedPair);
+  
+  if (!pb.authStore.isValid) {
+    alert('You must be logged in to place orders');
+    return;
+  }
+  
+  if (!currentPair) {
+    alert('Please select a trading pair first');
+    return;
+  }
+  
+  if ($amount <= 0) {
+    alert('Please enter an amount greater than 0');
+    return;
+  }
+  
+  if ($orderType === 'limit' && !$price) {
+    alert('Please enter a price for limit orders');
+    return;
+  }
+  
+  try {
+    // Create the order
+    const orderData = {
+      ...createOrderObject(),
+      type: $type,
+      user: pb.authStore.model?.id,
+      symbol: symbol,
+      total: orderValue
+    };
     
-    // Calculate and update the slider percentage for display purposes
-    const percentValue = (maxAmount > 0) ? ($amount / maxAmount) * 100 : 0;
-    sliderPercentage.set(Math.round(percentValue));
-}
-function setAmount(value: number) {
-    // Update the amount store
-    amount.set(parseFloat(value.toFixed(4)));
+    const createdOrder = await pb.collection('orderbook').create(orderData);
     
-    // Calculate and update the slider percentage for display purposes
-    const percentValue = (maxAmount > 0) ? (value / maxAmount) * 100 : 0;
-    sliderPercentage.set(Math.round(percentValue));
-}
-
-$: sliderStep = maxAmount > 0 ? maxAmount / 20 : 0.0001;
-
-$: if (maxAmount !== undefined && maxAmount > 0) {
-    if ($amount > maxAmount) {
-        amount.set(maxAmount);
-    }
-    handleAmountChange();
-}
-  onMount(() => {
-        return () => {
-            unsubscribePair();
-        };
+    // Update the reserved balance
+    const currencyToReserve = $type === 'buy' ? quoteCurrency : baseCurrency;
+    const amountToReserve = $type === 'buy' ? orderValue : $amount;
+    
+    const walletsList = await pb.collection('wallets').getList(1, 1, {
+      filter: `userId = "${pb.authStore.model?.id}" && currency = "${currencyToReserve}"`
     });
     
-    $: availableBalance = $type === 'buy' 
-        ? $availableBalances.buy 
-        : $availableBalances.sell;
+    if (walletsList.items.length > 0) {
+      const wallet = walletsList.items[0];
+      const currentReserved = parseFloat(wallet.balanceReserved?.toString() || '0');
+      
+      await pb.collection('wallets').update(wallet.id, {
+        balanceReserved: currentReserved + amountToReserve
+      });
+      
+      await fetchWallets();
+    }
     
-    $: maxAmount = $type === 'buy' 
-        ? $price ? availableBalance / $price : 0 
-        : availableBalance;
+    // Reset form
+    amount.set(0);
+    sliderPercentage.set(0);
+    if ($orderType === 'limit') {
+      price.set(null);
+    }
     
-    $: orderValue = $price ? $amount * $price : 0;
-    $: if (maxAmount !== undefined && $sliderPercentage > 0) {
-      updateAmountFromSlider();
+    alert('Order placed successfully!');
+  } catch (error) {
+    console.error('Error creating order:', error);
+    alert('Failed to place order. Please try again.');
+  }
+}
+
+  function handleAmountChange() {
+    if ($amount > maxAmount) {
+      amount.set(maxAmount);
+    }
+    
+    const percentValue = (maxAmount > 0) ? ($amount / maxAmount) * 100 : 0;
+    sliderPercentage.set(Math.round(percentValue));
+  }
+
+  function setAmount(value: number) {
+    const formattedValue = parseFloat(Math.min(value, maxAmount).toFixed(4));
+    amount.set(formattedValue);
+    
+    const percentValue = (maxAmount > 0) ? (formattedValue / maxAmount) * 100 : 0;
+    sliderPercentage.set(Math.round(percentValue));
+}
+
+onMount(async () => {
+  // Explicitly load wallets when component mounts
+  await fetchWallets();
+  
+  // Debug the wallets we have
+  console.log("All wallets in store:", get(wallets));
+  console.log("Current user:", get(currentUser));
+  
+  if (get(selectedPair)) {
+    updateDisplayedBalance();
+  }
+  
+  return () => {
+    unsubscribePair();
+    unsubscribeType();
+  };
+});
+  
+  $: sliderStep = maxAmount > 0 ? maxAmount / 20 : 0.0001;
+  $: maxAmount = $type === 'buy' ? ($price ? availableBalance / $price : 0) : availableBalance;
+  $: orderValue = $price ? $amount * $price : 0;
+  
+  $: if (maxAmount !== undefined && maxAmount > 0) {
+    if ($amount > maxAmount) {
+      amount.set(maxAmount);
+    }
+    handleAmountChange();
+  }
+  
+  $: if (maxAmount !== undefined && $sliderPercentage > 0) {
+    updateAmountFromSlider();
   }
 </script>
 
@@ -317,27 +353,42 @@ $: if (maxAmount !== undefined && maxAmount > 0) {
                   on:input={handleAmountChange}
                   placeholder="0.00"
               />
+              <button 
+                class="max-button" 
+                on:click={() => setAmount(maxAmount)}
+                title="Set maximum amount"
+            >
+                MAX
+            </button>
               <span class="currency">{baseCurrency}</span>
           </div>
       </div>
       
       <!-- Percentage slider with finer 5% steps -->
       <div class="slider-container">
-          <input 
-              type="range" 
-              min="0" 
-              max={maxAmount} 
-              step={maxAmount / 20} 
-              bind:value={$amount}
-          />
-          <div class="percentage-buttons">
-              <button on:click={() => setAmount(0)}>0%</button>
-              <button on:click={() => setAmount(maxAmount * 0.25)}>25%</button>
-              <button on:click={() => setAmount(maxAmount * 0.5)}>50%</button>
-              <button on:click={() => setAmount(maxAmount * 0.75)}>75%</button>
-              <button on:click={() => setAmount(maxAmount)}>100%</button>
-          </div>
-      </div>
+        <div class="slider-wrapper">
+            <input 
+                type="range" 
+                min="0" 
+                max={maxAmount} 
+                step={maxAmount / 20} 
+                bind:value={$amount}
+                class="percentage-slider"
+            />
+            <div 
+                class="slider-percentage-indicator" 
+                style="left: calc({($amount / maxAmount) * 100}% - 15px);">
+                {Math.round(($amount / maxAmount) * 100) || 0}%
+            </div>
+        </div>
+        <div class="percentage-buttons">
+            <button on:click={() => setAmount(0)}>0%</button>
+            <button on:click={() => setAmount(maxAmount * 0.25)}>25%</button>
+            <button on:click={() => setAmount(maxAmount * 0.5)}>50%</button>
+            <button on:click={() => setAmount(maxAmount * 0.75)}>75%</button>
+            <button on:click={() => setAmount(maxAmount)}>100%</button>
+        </div>
+    </div>
       </div>
       
       <!-- Right column -->
@@ -346,7 +397,7 @@ $: if (maxAmount !== undefined && maxAmount > 0) {
           <div class="total-value">
               <span>Total</span>
               <span class="price">                        
-                {orderValue.toFixed(2)} {$type === 'buy' ? quoteCurrency : baseCurrency}                      
+                {orderValue.toFixed(2)} {$type === 'buy' ? quoteCurrency : quoteCurrency}                      
               </span>
           </div>
       </div>
@@ -552,6 +603,24 @@ $: if (maxAmount !== undefined && maxAmount > 0) {
       padding: 0.5rem;
       background: var(--tertiary-color);
     }
+
+    .max-button {
+      position: absolute;
+      right: 70px; /* Adjust based on the width of currency span */
+      background-color: rgba(0, 0, 0, 0.1);
+      border: none;
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-size: 0.8em;
+      cursor: pointer;
+      color: #666;
+      transition: background-color 0.2s;
+  }
+
+  .max-button:hover {
+      background: var(--primary-color);
+      color: var(--text-color);
+  }
     
     .currency {
       position: absolute;
@@ -562,28 +631,82 @@ $: if (maxAmount !== undefined && maxAmount > 0) {
     }
     
     .slider-container {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      border-bottom: 1px solid var(--tertiary-color);
+      margin: 1rem 0;
+
     }
+
+    .slider-wrapper {
+    position: relative;
+    padding-top: 1rem;
+    margin-bottom: 1rem;
+}
+
+.percentage-slider {
+    width: auto;
+    height: 6px;
+
+    -webkit-appearance: none;
+    appearance: none;
+    background: var(--primary-color);
+    border-radius: 1rem;
+    outline: none;
+}
+
+.percentage-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--text-color);
+    cursor: pointer;
+}
+
+.percentage-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border: none;
+    border-radius: 50%;
+    background: var(--primary-color);
+    cursor: pointer;
+}
+
+.slider-percentage-indicator {
+    position: absolute;
+    top: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width:1.25rem;
+    height: 1.5rem;
+    color: white;
+    border-radius: 1rem;
+    font-size: 1rem;
+    font-weight: bold;
+    transition: left 0.1s ease-out;
+    z-index: 5;
+}
     
     input[type="range"] {
-      width: 100%;
+      width: calc(100% - 2rem);
     }
     
     .percentage-buttons {
       display: flex;
       justify-content: space-between;
-    }
-    
+      display: none;
+      margin-top: 5px;
+      border-top: 1px solid var(--tertiary-color);
+  }
     .percentage-buttons button {
-      border: none;
-      background: none;
-      cursor: pointer;
+      padding: 3px 5px;
+      background: transparent;
       color: var(--text-color);
-      font-size: 1.5rem;
-    }
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 0.8rem;
+  }
     
     .submit-button {
       width: 100%;
